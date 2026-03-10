@@ -1,0 +1,191 @@
+/* ============================================================
+   LFS — Cookie consent banner styles
+   Used by views/partials/cookie-banner.ejs
+   ============================================================ */
+
+#lfs-cookie-banner {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(92vw, 720px);
+  background: var(--black-mid, #141414);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.5rem;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  font-family: var(--font-body, 'DM Sans', sans-serif);
+  color: var(--off-white, #f5f2ec);
+  overflow: hidden;
+  animation: lfsCookieSlideUp 0.4s ease forwards;
+}
+
+@keyframes lfsCookieSlideUp {
+  from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes lfsCookieSlideUpMobile {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.lfs-cookie-flag-bar {
+  height: 3px;
+  background: #e07b39;
+}
+
+.lfs-cookie-body {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  flex-wrap: wrap;
+}
+
+.lfs-cookie-text { flex: 1; min-width: 0; }
+
+.lfs-cookie-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 0.35rem;
+  letter-spacing: 0.02em;
+}
+
+.lfs-cookie-desc {
+  font-size: 0.82rem;
+  color: rgba(245, 242, 236, 0.72);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.lfs-cookie-link { color: #7ecb93; text-decoration: underline; }
+.lfs-cookie-link:hover { color: #6aad7e; }
+
+.lfs-cookie-form {
+  display: inline;
+}
+
+.lfs-cookie-actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.lfs-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.55rem 1.1rem;
+  border-radius: 0.25rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  white-space: nowrap;
+  text-decoration: none;
+  font-family: inherit;
+}
+
+.lfs-btn-green            { background: #4a7c59; color: #fff; }
+.lfs-btn-green:hover      { background: #6aad7e; }
+.lfs-btn-outline          { background: transparent; color: #f5f2ec; border: 1px solid rgba(255,255,255,0.25); }
+.lfs-btn-outline:hover    { border-color: #e07b39; color: #e07b39; }
+.lfs-btn-ghost            { background: transparent; color: rgba(245,242,236,0.55); font-weight: 400; }
+.lfs-btn-ghost:hover      { color: #e07b39; }
+
+/* Preferences panel */
+.lfs-cookie-prefs {
+  padding: 1.25rem 1.5rem 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.lfs-prefs-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #7ecb93;
+}
+
+.lfs-prefs-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.lfs-pref-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0.75rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 0.25rem;
+  gap: 1rem;
+}
+
+.lfs-pref-item span strong { display: block; font-size: 0.85rem; }
+.lfs-pref-item span small  { font-size: 0.75rem; color: rgba(245,242,236,0.5); }
+
+.lfs-pref-item input[type="checkbox"] {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex-shrink: 0;
+  cursor: pointer;
+  accent-color: #4a7c59;
+}
+
+.lfs-pref-item input[type="checkbox"]:disabled { cursor: not-allowed; opacity: 0.45; }
+
+.lfs-prefs-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+
+/* Tablet — wrap actions below text on narrower viewports */
+@media (max-width: 680px) {
+  .lfs-cookie-body {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .lfs-cookie-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+/* Mobile — full-width sheet anchored to bottom */
+@media (max-width: 480px) {
+  #lfs-cookie-banner {
+    bottom: 0;
+    left: 0;
+    right: 0;
+    transform: none;
+    width: 100%;
+    border-radius: 0.75rem 0.75rem 0 0;
+    animation-name: lfsCookieSlideUpMobile;
+  }
+  .lfs-cookie-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+  .lfs-cookie-form {
+    display: flex;
+  }
+  .lfs-cookie-form .lfs-btn,
+  .lfs-cookie-actions > .lfs-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .lfs-prefs-actions {
+    flex-direction: column;
+  }
+  .lfs-prefs-actions .lfs-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

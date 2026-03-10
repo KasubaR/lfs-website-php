@@ -1,0 +1,176 @@
+Use full CDN URLs in your stylesheet (no files in the project):
+
+
+/* CDN base – optional, if your CSS supports variables */
+:root {
+  --cdn-base: 'https://your-cdn.com/images';
+}
+/* Hero / section backgrounds */
+.hero-slide .bg-image {
+  background-image: url('https://your-cdn.com/images/hero/slide-1.jpg');
+}
+.hero-slide .bg-image._2 {
+  background-image: url('https://your-cdn.com/images/hero/slide-2.jpg');
+}
+.hero-slide .bg-image._3 {
+  background-image: url('https://your-cdn.com/images/hero/slide-3.jpg');
+}
+/* Card / tile backgrounds */
+.card-item {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+
+
+**No. This project does not use WordPress.**
+
+What it uses instead:
+
+- **Plain PHP** – `index.php` and `includes/header.php` / `includes/footer.php` with `require_once`; no WordPress APIs or template tags.
+- **Webflow** – The layout and assets come from Webflow (comment in the header: "Original Webflow CSS", and styles/scripts from `cdn.prod.website-files.com`).
+
+So it’s a **static-style site built from Webflow export**, with minimal PHP only to include header/footer. There are no `wp-config.php`, `wp-content`, or WordPress function calls in the project.
+
+
+
+Here’s a straightforward way to do it in **Node.js with Express**: upload in the admin, store files on disk, and use URLs like `/uploads/gallery/filename.jpg` (no Cloudinary).
+
+---
+
+## 1. Dependencies
+
+```bash
+npm install express multer
+```
+
+- **express** – web server  
+- **multer** – handles `multipart/form-data` (file uploads)
+
+---
+
+## 2. Folder structure
+
+```
+your-project/
+├── server.js
+├── uploads/
+│   └── gallery/          ← uploaded images go here
+├── public/                ← optional: static frontend
+│   └── ...
+```
+
+`uploads/gallery` must exist (create it in code or by hand). The app will serve it so URLs work.
+
+---
+
+## 3. Basic Express server with upload and static serving
+
+```javascript
+const express = require('express');
+const path = require('path');
+const multer = require('multer');
+const fs = require('fs');
+
+const app = express();
+const PORT = 3000;
+
+// Ensure upload directory exists
+const galleryDir = path.join(__dirname, 'uploads', 'gallery');
+if (!fs.existsSync(galleryDir)) {
+  fs.mkdirSync(galleryDir, { recursive: true });
+}
+
+// Multer config: store in uploads/gallery, safe filenames
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, galleryDir),
+  filename: (req, file, cb) => {
+    const ext = (path.extname(file.originalname) || '.jpg').toLowerCase();
+    const safeName = `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`;
+    cb(null, safeName);
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  fileFilter: (req, file, cb) => {
+    const allowed = /^image\/(jpeg|png|gif|webp)$/;
+    if (allowed.test(file.mimetype)) return cb(null, true);
+    cb(new Error('Only images (JPEG, PNG, GIF, WebP) allowed.'));
+  }
+});
+
+// Serve uploaded files at /uploads/... so URL works
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Optional: serve your frontend
+app.use(express.static(path.join(__dirname, 'public')));
+
+// ----- Admin: upload one image -----
+app.post('/admin/upload', upload.single('photo'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+  const url = `/uploads/gallery/${req.file.filename}`;
+  res.json({ success: true, url });
+});
+
+// ----- Admin: upload multiple images -----
+app.post('/admin/upload-many', upload.array('photos', 20), (req, res) => {
+  if (!req.files?.length) return res.status(400).json({ error: 'No files uploaded' });
+  const urls = req.files.map(f => `/uploads/gallery/${f.filename}`);
+  res.json({ success: true, urls });
+});
+
+// ----- Gallery: list image URLs (no DB) -----
+app.get('/api/gallery', (req, res) => {
+  const files = fs.readdirSync(galleryDir)
+    .filter(f => /\.(jpg|jpeg|png|gif|webp)$/i.test(f))
+    .map(f => `/uploads/gallery/${f}`);
+  res.json({ images: files });
+});
+
+app.listen(PORT, () => console.log(`Server on http://localhost:${PORT}`));
+```
+
+- **Upload** → file is saved under `uploads/gallery/` with a unique name.  
+- **URL** → same idea as PHP: use `/uploads/gallery/filename` (Express serves it via `express.static`).  
+- **Gallery** → either call `/api/gallery` and use those URLs, or list the folder yourself.
+
+---
+
+## 4. Admin upload form (HTML)
+
+Same idea as any form: post to your upload URL with `multipart/form-data`.
+
+**Single file:**
+
+```html
+<form action="/admin/upload" method="post" enctype="multipart/form-data">
+  <input type="file" name="photo" accept="image/*" required>
+  <button type="submit">Upload</button>
+</form>
+```
+
+**Multiple files:**
+
+```html
+<form action="/admin/upload-many" method="post" enctype="multipart/form-data">
+  <input type="file" name="photos" accept="image/*" multiple>
+  <button type="submit">Upload all</button>
+</form>
+```
+
+`name` must match: `upload.single('photo')` → `name="photo"`, `upload.array('photos')` → `name="photos"`.
+
+---
+
+## 5. Using the URLs on the frontend
+
+After upload, the response gives you a URL like `/uploads/gallery/1234567890-abc123.jpg`. Use it like you do with your current external URLs:
+
+- **In HTML:**  
+  `<img src="/uploads/gallery/1234567890-abc123.jpg" alt="Gallery">`
+- **In CSS:**  
+  `background-image: url('/uploads/gallery/1234567890-abc123.jpg');`
+- **From API:**  
+  Fetch `/api/gallery`, get `images` array of URLs, then render `<img src={url}>` for each.

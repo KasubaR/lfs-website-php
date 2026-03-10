@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="csrf-token" content="<%= locals.csrfToken || '' %>" />
+  <title><%= typeof pageTitle !== 'undefined' ? `${pageTitle} — LFS Admin` : 'LFS Admin' %></title>
+
+  <!-- Preconnect -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet" />
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-Avb2QiuDEEvB4bZJYdft2mNjVShBftLdPG8FJ0V7irTLQ8Uo0qcPxh4Plq7G5tGm0rU+1SPhVotteLpBERwTkw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- LFS Styles -->
+  <link rel="stylesheet" href="/admin/css/admin.css" />
+
+  <!-- Page-specific styles -->
+  <%- typeof extraStyles !== 'undefined' ? extraStyles : '' %>
+</head>
+
+<body class="admin-body">
+
+<!-- ══════════════════════════════════════════════
+     MOBILE OVERLAY
+════════════════════════════════════════════════ -->
+<div class="mobile-overlay" id="mobileOverlay" onclick="toggleSidebar()"></div>
+
+<!-- ══════════════════════════════════════════════
+     ADMIN LAYOUT WRAPPER
+════════════════════════════════════════════════ -->
+<div class="admin-layout" id="adminLayout">
+
+  <!-- ─────────────────────────────────────────
+       SIDEBAR
+  ───────────────────────────────────────────── -->
+  <aside class="admin-sidebar" id="adminSidebar" role="navigation" aria-label="Admin Navigation">
+
+    <!-- Logo -->
+    <a href="/admin/dashboard" class="admin-sidebar__logo" aria-label="LFS Admin Home">
+      <div class="admin-sidebar__logo-mark" aria-hidden="true">LFS</div>
+      <div class="admin-sidebar__logo-text">
+        <span>Lusaka Fitness</span>
+        <span>Admin Panel</span>
+      </div>
+    </a>
+
+    <!-- Navigation -->
+    <nav class="admin-sidebar__nav" aria-label="Main navigation">
+
+      <a href="/admin/dashboard"
+         class="nav-item <%= typeof activePage !== 'undefined' && activePage === 'dashboard' ? 'active' : '' %>"
+         aria-current="<%= typeof activePage !== 'undefined' && activePage === 'dashboard' ? 'page' : 'false' %>">
+        <i class="fas fa-gauge-high nav-item__icon" aria-hidden="true"></i>
+        <span class="nav-item__label">Dashboard</span>
+      </a>
+
+      <a href="/admin/members"
+         class="nav-item <%= typeof activePage !== 'undefined' && activePage === 'members' ? 'active' : '' %>"
+         aria-current="<%= typeof activePage !== 'undefined' && activePage === 'members' ? 'page' : 'false' %>">
+        <i class="fas fa-users nav-item__icon" aria-hidden="true"></i>
+        <span class="nav-item__label">Members</span>
+        <% if (typeof counts !== 'undefined' && counts.pendingMembers > 0) { %>
+          <span class="nav-item__badge" aria-label="<%= counts.pendingMembers %> pending"><%= counts.pendingMembers %></span>
+        <% } %>
+      </a>
+
+      <a href="/admin/events"
+         class="nav-item <%= typeof activePage !== 'undefined' && activePage === 'events' ? 'active' : '' %>"
+         aria-current="<%= typeof activePage !== 'undefined' && activePage === 'events' ? 'page' : 'false' %>">
+        <i class="fas fa-calendar-days nav-item__icon" aria-hidden="true"></i>
+        <span class="nav-item__label">Events</span>
+      </a>
+
+      <a href="/admin/gallery"
+         class="nav-item <%= typeof activePage !== 'undefined' && activePage === 'gallery' ? 'active' : '' %>"
+         aria-current="<%= typeof activePage !== 'undefined' && activePage === 'gallery' ? 'page' : 'false' %>">
+        <i class="fas fa-images nav-item__icon" aria-hidden="true"></i>
+        <span class="nav-item__label">Gallery</span>
+        <% if (typeof counts !== 'undefined' && counts.pendingGallery > 0) { %>
+          <span class="nav-item__badge" aria-label="<%= counts.pendingGallery %> awaiting approval"><%= counts.pendingGallery %></span>
+        <% } %>
+      </a>
+
+      <a href="/admin/blog"
+         class="nav-item <%= typeof activePage !== 'undefined' && activePage === 'blog' ? 'active' : '' %>"
+         aria-current="<%= typeof activePage !== 'undefined' && activePage === 'blog' ? 'page' : 'false' %>">
+        <i class="fas fa-pencil nav-item__icon" aria-hidden="true"></i>
+        <span class="nav-item__label">Blog</span>
+      </a>
+
+      <a href="/admin/products"
+         class="nav-item <%= typeof activePage !== 'undefined' && activePage === 'products' ? 'active' : '' %>"
+         aria-current="<%= typeof activePage !== 'undefined' && activePage === 'products' ? 'page' : 'false' %>">
+        <i class="fas fa-shirt nav-item__icon" aria-hidden="true"></i>
+        <span class="nav-item__label">Shop</span>
+      </a>
+
+      <a href="/admin/orders"
+         class="nav-item <%= typeof activePage !== 'undefined' && activePage === 'orders' ? 'active' : '' %>"
+         aria-current="<%= typeof activePage !== 'undefined' && activePage === 'orders' ? 'page' : 'false' %>">
+        <i class="fas fa-bag-shopping nav-item__icon" aria-hidden="true"></i>
+        <span class="nav-item__label">Orders</span>
+        <% if (typeof counts !== 'undefined' && counts.pendingOrders > 0) { %>
+          <span class="nav-item__badge" aria-label="<%= counts.pendingOrders %> pending orders"><%= counts.pendingOrders %></span>
+        <% } %>
+      </a>
+
+      <a href="/admin/settings"
+         class="nav-item <%= typeof activePage !== 'undefined' && activePage === 'settings' ? 'active' : '' %>"
+         aria-current="<%= typeof activePage !== 'undefined' && activePage === 'settings' ? 'page' : 'false' %>">
+        <i class="fas fa-sliders nav-item__icon" aria-hidden="true"></i>
+        <span class="nav-item__label">Settings</span>
+      </a>
+
+    </nav><!-- /.admin-sidebar__nav -->
+
+    <!-- Footer — Go back to site + Logout -->
+    <div class="admin-sidebar__footer">
+      <a href="/" class="nav-item" aria-label="Go back to site" target="_blank" rel="noopener noreferrer">
+        <i class="fas fa-arrow-up-right-from-square nav-item__icon" aria-hidden="true"></i>
+        <span class="nav-item__label">Go back to site</span>
+      </a>
+      <a href="/admin/logout"
+         class="nav-item"
+         onclick="return confirm('Log out of admin panel?')"
+         aria-label="Logout">
+        <i class="fas fa-right-from-bracket nav-item__icon" aria-hidden="true"></i>
+        <span class="nav-item__label">Logout</span>
+      </a>
+    </div>
+
+  </aside><!-- /.admin-sidebar -->
+
+
+  <!-- ─────────────────────────────────────────
+       TOP BAR
+  ───────────────────────────────────────────── -->
+  <header class="admin-topbar" id="adminTopbar" role="banner">
+
+    <!-- Left: toggle + title -->
+    <div class="admin-topbar__left">
+      <button class="admin-topbar__toggle"
+              id="sidebarToggle"
+              onclick="toggleSidebar()"
+              aria-label="Toggle sidebar"
+              aria-expanded="true"
+              aria-controls="adminSidebar">
+        <i class="fas fa-bars" aria-hidden="true"></i>
+      </button>
+
+      <div class="admin-topbar__title-area">
+        <h1><%= typeof pageTitle !== 'undefined' ? pageTitle : 'Dashboard' %></h1>
+        <% if (typeof breadcrumbs !== 'undefined' && breadcrumbs.length) { %>
+          <nav class="admin-topbar__breadcrumb" aria-label="Breadcrumb">
+            <a href="/admin/dashboard">
+              <i class="fas fa-house" aria-hidden="true"></i>
+            </a>
+            <% breadcrumbs.forEach((crumb, idx) => { %>
+              <span class="sep" aria-hidden="true">/</span>
+              <% if (idx < breadcrumbs.length - 1) { %>
+                <a href="<%= crumb.url %>"><%= crumb.label %></a>
+              <% } else { %>
+                <span class="current" aria-current="page"><%= crumb.label %></span>
+              <% } %>
+            <% }); %>
+          </nav>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Right: notifications + profile -->
+    <div class="admin-topbar__right">
+
+      <!-- Search -->
+      <button class="topbar-btn" aria-label="Search" title="Search">
+        <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+      </button>
+
+      <!-- Notifications -->
+      <div style="position:relative;" x-data="{ open: false }">
+        <button class="topbar-btn"
+                aria-label="Notifications"
+                title="Notifications"
+                @click="open = !open"
+                :aria-expanded="open.toString()">
+          <i class="fas fa-bell" aria-hidden="true"></i>
+          <% if (typeof notifications !== 'undefined' && notifications.unread > 0) { %>
+            <span class="topbar-btn__dot" aria-label="<%= notifications.unread %> unread notifications"></span>
+          <% } %>
+        </button>
+
+        <!-- Notification Dropdown -->
+        <div class="admin-dropdown" :class="{ open: open }" @click.outside="open = false" role="menu" aria-label="Notifications menu">
+          <div class="admin-dropdown__header">
+            <strong>Notifications</strong>
+            <%= typeof notifications !== 'undefined' && notifications.unread > 0 ? notifications.unread + ' unread' : 'All caught up' %>
+          </div>
+          <% if (typeof notifications !== 'undefined' && notifications.items && notifications.items.length) { %>
+            <% notifications.items.slice(0, 5).forEach(function(notif) { %>
+              <a href="<%= notif.url || '#' %>" class="admin-dropdown__item" role="menuitem">
+                <i class="<%= notif.icon || 'fas fa-circle-info' %>" aria-hidden="true"></i>
+                <%= notif.message %>
+              </a>
+            <% }); %>
+          <% } else { %>
+            <div class="admin-dropdown__item" style="cursor:default;color:var(--text-dim);">
+              <i class="fas fa-check-circle" aria-hidden="true"></i>
+              No new notifications
+            </div>
+          <% } %>
+          <div class="admin-dropdown__sep"></div>
+          <a href="/admin/notifications" class="admin-dropdown__item" role="menuitem">
+            <i class="fas fa-list" aria-hidden="true"></i> View all notifications
+          </a>
+        </div>
+      </div>
+
+      <!-- Profile Dropdown -->
+      <div style="position:relative;" x-data="{ open: false }">
+        <button class="admin-profile-trigger"
+                @click="open = !open"
+                :aria-expanded="open.toString()"
+                aria-haspopup="true"
+                aria-label="Profile menu">
+          <div class="avatar-sm" aria-hidden="true">
+            <img src="/images/LFS-logo.svg" alt="LFS" style="width:100%; height:100%; object-fit:contain; border-radius:inherit;">
+          </div>
+          <span><%= typeof adminUser !== 'undefined' ? adminUser.name.split(' ')[0] : 'Admin' %></span>
+          <i class="fas fa-chevron-down" aria-hidden="true"></i>
+        </button>
+
+        <div class="admin-dropdown" :class="{ open: open }" @click.outside="open = false" role="menu" aria-label="Profile menu">
+          <div class="admin-dropdown__header">
+            <strong><%= typeof adminUser !== 'undefined' ? adminUser.name : 'Admin User' %></strong>
+            <%= typeof adminUser !== 'undefined' ? adminUser.email : '' %>
+          </div>
+          <a href="/admin/profile" class="admin-dropdown__item" role="menuitem">
+            <i class="fas fa-user" aria-hidden="true"></i> My Profile
+          </a>
+          <a href="/admin/settings" class="admin-dropdown__item" role="menuitem">
+            <i class="fas fa-sliders" aria-hidden="true"></i> Settings
+          </a>
+          <a href="/" class="admin-dropdown__item" target="_blank" rel="noopener" role="menuitem">
+            <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i> View Site
+          </a>
+          <div class="admin-dropdown__sep"></div>
+          <a href="/admin/logout"
+             class="admin-dropdown__item danger"
+             onclick="return confirm('Log out of admin panel?')"
+             role="menuitem">
+            <i class="fas fa-right-from-bracket" aria-hidden="true"></i> Logout
+          </a>
+        </div>
+      </div>
+
+    </div><!-- /.admin-topbar__right -->
+  </header><!-- /.admin-topbar -->
+
+
+  <!-- ─────────────────────────────────────────
+       MAIN CONTENT AREA
+  ───────────────────────────────────────────── -->
+  <main class="admin-main" id="adminMain" role="main" aria-label="Main content">
+
+    <!-- Flash messages -->
+    <% if (typeof flash !== 'undefined') { %>
+      <% if (flash.success) { %>
+        <div class="sys-notif sys-notif--info" role="alert" style="margin-bottom:1rem;">
+          <i class="fas fa-circle-check" aria-hidden="true"></i>
+          <span><%= flash.success %></span>
+          <button onclick="this.parentElement.remove()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:inherit;" aria-label="Dismiss">
+            <i class="fas fa-xmark" aria-hidden="true"></i>
+          </button>
+        </div>
+      <% } %>
+      <% if (flash.error) { %>
+        <div class="sys-notif sys-notif--error" role="alert" style="margin-bottom:1rem;">
+          <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+          <span><%= flash.error %></span>
+          <button onclick="this.parentElement.remove()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:inherit;" aria-label="Dismiss">
+            <i class="fas fa-xmark" aria-hidden="true"></i>
+          </button>
+        </div>
+      <% } %>
+      <% if (flash.warning) { %>
+        <div class="sys-notif sys-notif--warning" role="alert" style="margin-bottom:1rem;">
+          <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+          <span><%= flash.warning %></span>
+          <button onclick="this.parentElement.remove()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:inherit;" aria-label="Dismiss">
+            <i class="fas fa-xmark" aria-hidden="true"></i>
+          </button>
+        </div>
+      <% } %>
+    <% } %>
+
+    <!-- Page body injected here -->
+    <%- body %>
+
+  </main><!-- /.admin-main -->
+
+</div><!-- /.admin-layout -->
+
+
+<!-- ══════════════════════════════════════════════
+     GLOBAL SCRIPTS
+════════════════════════════════════════════════ -->
+
+<!-- Alpine.js (for dropdown interactions) -->
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<!-- DataTables (jQuery required) -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<link  rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.tailwindcss.min.css" />
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+
+<!-- LFS Admin JS -->
+<script src="/admin/js/dashboard.js"></script>
+
+<!-- Page-specific scripts -->
+<%- typeof extraScripts !== 'undefined' ? extraScripts : '' %>
+
+</body>
+</html>

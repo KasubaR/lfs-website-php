@@ -1,0 +1,150 @@
+<%
+  var alb   = typeof album !== 'undefined' ? album : {};
+  var aDate = alb.date ? new Date(alb.date) : null;
+  var dateStr = aDate
+    ? aDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+    : null;
+  var itemCount = Array.isArray(media) ? media.length : (typeof alb.mediaCount === 'number' ? alb.mediaCount : 0);
+%>
+
+<!-- ══════════════════════════════════════════════
+     1. HERO (reuses event-detail hero styles)
+     ══════════════════════════════════════════════ -->
+<div class="event-detail-hero">
+
+  <% if (alb.coverImage) { %>
+  <div class="event-detail-hero__bg">
+    <img src="<%= alb.coverImage %>" alt="<%= alb.title %>" loading="eager">
+    <div class="event-detail-hero__overlay"></div>
+  </div>
+  <% } else { %>
+  <div class="event-detail-hero__bg event-detail-hero__bg--placeholder"></div>
+  <% } %>
+
+  <div class="event-detail-hero__content">
+    <nav class="events-breadcrumb" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="/">Home</a></li>
+        <li><i class="fas fa-chevron-right" aria-hidden="true"></i></li>
+        <li><a href="/gallery">Gallery</a></li>
+        <li><i class="fas fa-chevron-right" aria-hidden="true"></i></li>
+        <li><%= alb.title %></li>
+      </ol>
+    </nav>
+
+    <div class="event-detail-hero__inner">
+      <div class="event-detail-hero__text">
+        <h1 class="font-['Bebas_Neue'] text-5xl md:text-7xl leading-tight text-white">
+          <%= alb.title %>
+        </h1>
+
+        <div class="event-detail-hero__meta mt-4">
+          <% if (dateStr) { %>
+          <div class="event-detail-hero__meta-item">
+            <i class="fas fa-calendar-alt" aria-hidden="true"></i>
+            <span><%= dateStr %></span>
+          </div>
+          <% } %>
+          <% if (alb.location) { %>
+          <div class="event-detail-hero__meta-item">
+            <i class="fas fa-map-pin" aria-hidden="true"></i>
+            <span><%= alb.location %></span>
+          </div>
+          <% } %>
+          <% if (alb.category) { %>
+          <div class="event-detail-hero__meta-item">
+            <i class="fas fa-tag" aria-hidden="true"></i>
+            <span><%= alb.category %></span>
+          </div>
+          <% } %>
+          <% if (itemCount > 0) { %>
+          <div class="event-detail-hero__meta-item">
+            <i class="fas fa-images" aria-hidden="true"></i>
+            <span><%= itemCount %> item<%= itemCount === 1 ? '' : 's' %></span>
+          </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     2. BODY — overview + media grid
+     ══════════════════════════════════════════════ -->
+<div class="event-detail-body">
+  <div class="event-detail-body__inner">
+
+    <div class="event-detail-main">
+
+      <% if (typeof media !== 'undefined' && media.length > 0) { %>
+        <div class="gallery-grid" role="list" aria-label="Album photos and videos">
+          <% media.forEach(function(item, idx) {
+               const imgUrl = (item.urls && (item.urls.medium || item.urls.thumbnail || item.urls.large)) || null;
+          %>
+            <div class="gallery-grid__item gallery-grid__item--clickable" role="listitem"
+                 onclick="openLightbox(<%= idx %>)" tabindex="0"
+                 onkeydown="if(event.key==='Enter'||event.key===' ')openLightbox(<%= idx %>)"
+                 aria-label="View <%= item.caption ? item.caption : (item.type === 'video' ? 'video' : 'photo') %> <%= idx + 1 %>">
+              <% if (item.type === 'video') { %>
+                <% if (imgUrl) { %>
+                  <img src="<%= imgUrl %>" alt="<%= item.caption || 'Video thumbnail' %>" loading="lazy">
+                <% } else { %>
+                  <div class="w-full h-full flex items-center justify-center" style="background:var(--black-mid); color:var(--white-dim);">
+                    <i class="fas fa-play" style="font-size:2rem;"></i>
+                  </div>
+                <% } %>
+                <div class="gallery-grid__play-badge"><i class="fas fa-play"></i></div>
+              <% } else { %>
+                <% if (imgUrl) { %>
+                  <img src="<%= imgUrl %>" alt="<%= item.caption || '' %>" loading="lazy">
+                <% } else { %>
+                  <div class="w-full h-full flex items-center justify-center" style="background:var(--black-mid); color:var(--white-dim);">
+                    <i class="fas fa-image" style="font-size:2rem;"></i>
+                  </div>
+                <% } %>
+              <% } %>
+            </div>
+          <% }); %>
+        </div>
+      <% } else { %>
+        <p class="text-sm text-[#6b7280]">
+          No photos or videos have been added to this album yet.
+        </p>
+      <% } %>
+
+    </div><!-- /.event-detail-main -->
+
+  </div><!-- /.event-detail-body__inner -->
+</div><!-- /.event-detail-body -->
+
+
+<!-- ══════════════════════════════════════════════
+     LIGHTBOX
+     ══════════════════════════════════════════════ -->
+<div id="lbOverlay" class="lb-overlay is-hidden" role="dialog" aria-modal="true" aria-label="Image preview">
+  <button class="lb-close" onclick="closeLightbox()" aria-label="Close"><i class="fas fa-xmark"></i></button>
+
+  <button class="lb-nav lb-nav--prev" onclick="lbPrev()" aria-label="Previous"><i class="fas fa-chevron-left"></i></button>
+  <button class="lb-nav lb-nav--next" onclick="lbNext()" aria-label="Next"><i class="fas fa-chevron-right"></i></button>
+
+  <div class="lb-content" id="lbContent"></div>
+
+  <div class="lb-meta" id="lbMeta">
+    <span class="lb-counter" id="lbCounter"></span>
+    <span class="lb-caption" id="lbCaption"></span>
+  </div>
+</div>
+
+<%
+var _lbData = JSON.stringify((typeof media !== 'undefined' ? media : []).map(function(m) {
+  return {
+    type:    m.type,
+    caption: m.caption || '',
+    large:   (m.urls && (m.urls.large || m.urls.medium || m.urls.original)) || '',
+    video:   (m.urls && m.urls.original) || ''
+  };
+}));
+scripts = '<script>var LB_MEDIA = ' + _lbData + ';<\/script><script src="/js/gallery-lightbox.js"><\/script>';
+%>

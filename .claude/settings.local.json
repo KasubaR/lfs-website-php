@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \":*)",
+      "Bash(npm install express-session)",
+      "Bash(node -e \"require\\(''./src/app.js''\\); console.log\\(''OK''\\);\")",
+      "Bash(python3 -c \":*)"
+    ]
+  }
+}

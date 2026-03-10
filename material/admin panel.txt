@@ -1,0 +1,92 @@
+src/
+ ├── admin/
+ │    ├── routes/
+ │    │     ├── admin.routes.js
+ │    │     ├── auth.routes.js
+ │    │     ├── members.routes.js
+ │    │     ├── events.routes.js
+ │    │     ├── gallery.routes.js
+ │    │     ├── shop.routes.js
+ │    │     ├── orders.routes.js
+ │    │     ├── blog.routes.js
+ │    │     └── settings.routes.js
+ │    │
+ │    ├── controllers/
+ │    │     ├── auth.controller.js
+ │    │     ├── dashboard.controller.js
+ │    │     ├── members.controller.js
+ │    │     ├── events.controller.js
+ │    │     ├── gallery.controller.js
+ │    │     ├── shop.controller.js
+ │    │     ├── orders.controller.js
+ │    │     ├── blog.controller.js
+ │    │     └── settings.controller.js
+ │    │
+ │    ├── views/
+ │    │     ├── layouts/
+ │    │     │     └── admin.layout.ejs
+ │    │     │
+ │    │     ├── dashboard/
+ │    │     │     └── index.ejs
+ │    │     │
+ │    │     ├── members/
+ │    │     │     ├── list.ejs
+ │    │     │     ├── create.ejs
+ │    │     │     ├── edit.ejs
+ │    │     │     └── view.ejs
+ │    │     │
+ │    │     ├── events/
+ │    │     │     ├── list.ejs
+ │    │     │     ├── create.ejs
+ │    │     │     ├── edit.ejs
+ │    │     │     └── results.ejs
+ │    │     │
+ │    │     ├── gallery/
+ │    │     │     ├── albums.ejs
+ │    │     │     ├── upload.ejs
+ │    │     │     └── manage.ejs
+ │    │     │
+ │    │     ├── shop/
+ │    │     │     ├── products.ejs
+ │    │     │     ├── create.ejs
+ │    │     │     └── edit.ejs
+ │    │     │
+ │    │     ├── orders/
+ │    │     │     ├── list.ejs
+ │    │     │     └── view.ejs
+ │    │     │
+ │    │     ├── blog/
+ │    │     │     ├── list.ejs
+ │    │     │     ├── create.ejs
+ │    │     │     └── edit.ejs
+ │    │     │
+ │    │     └── auth/
+ │    │           └── login.ejs
+ │    │
+ │    ├── services/
+ │    │     ├── admin.service.js
+ │    │     ├── reports.service.js
+ │    │     └── export.service.js
+ │    │
+ │    ├── middleware/
+ │    │     ├── adminAuth.middleware.js
+ │    │     └── role.middleware.js
+ │    │
+ │    └── utils/
+ │          ├── admin.constants.js
+ │          └── admin.helpers.js
+ │
+ └── public/
+      └── admin/
+           ├── css/
+           │     └── admin.css
+           │
+           ├── js/
+           │     ├── dashboard.js
+           │     ├── members.js
+           │     ├── events.js
+           │     ├── shop.js
+           │     └── gallery.js
+           │
+           └── images/
+                 └── admin-ui/

@@ -1,0 +1,263 @@
+shop.ejs — Client Side Requirements
+🎯 Page Purpose
+
+Allow visitors to:
+
+View all LFS merchandise
+
+Filter products
+
+View product details
+
+Add items to cart
+
+Proceed to checkout
+
+1️⃣ Page Layout Structure
+Navbar
+Page Header
+Product Filters
+Product Grid
+Pagination / Load More
+Cart Summary (optional sidebar)
+Footer
+2️⃣ Page Header
+Requirements
+
+Title
+
+Short description
+
+Breadcrumb navigation
+
+Example
+Shop LFS Merchandise
+High-quality running gear for Lusaka Fitness Squad members
+Home > Shop
+3️⃣ Product Filters
+
+Allow users to quickly find items.
+
+Filters Required
+
+Category
+
+Running Kits
+
+T-Shirts
+
+Caps
+
+Shorts
+
+Accessories
+
+Size
+
+S
+
+M
+
+L
+
+XL
+
+XXL
+
+Gender
+
+Male
+
+Female
+
+Unisex
+
+Price Range (optional)
+
+Sort Options
+
+Popular
+
+Latest
+
+Price Low → High
+
+Price High → Low
+
+4️⃣ Product Grid
+
+Display all available products.
+
+Layout
+3–4 products per row (desktop)
+2 products per row (tablet)
+1 product per row (mobile)
+Each Product Card Must Show
+
+Product image
+
+Product name
+
+Price
+
+Available sizes
+
+Stock status
+
+Quick view button
+
+Add to cart button
+
+Example
+[ Product Image ]
+
+LFS Running Shirt
+K250
+
+Sizes: S M L XL
+
+[ Add to Cart ]
+[ View Details ]
+5️⃣ Product Images
+Requirements
+
+High-quality images
+
+Consistent aspect ratio
+
+Lazy loading
+
+Optimized size (<200KB)
+
+Recommended Size
+800px × 800px
+6️⃣ Add To Cart System
+Requirements
+
+When user clicks Add to Cart:
+
+Product added without page refresh
+
+Show confirmation message
+
+Update cart icon count
+
+Example:
+
+Item added to cart ✓
+7️⃣ Quick View Modal (Recommended)
+
+Allows users to see product details without leaving the page.
+
+Modal Content
+
+Large product image
+
+Product description
+
+Size selector
+
+Quantity selector
+
+Price
+
+Add to cart button
+
+8️⃣ Product Detail Link
+
+Each product should link to:
+
+/shop/product/:slug
+
+Example:
+
+/shop/product/lfs-running-shirt
+
+Product page shows:
+
+Multiple images
+
+Full description
+
+Size selection
+
+Stock
+
+Add to cart
+
+9️⃣ Pagination / Load More
+
+For larger shops.
+
+Options:
+
+Pagination
+
+1 2 3 4
+
+or
+
+Load More Button
+
+Load More Products
+🔟 Empty State
+
+If no products exist.
+
+Example message:
+
+No products available at the moment.
+Check back soon!
+1️⃣1️⃣ Cart Icon (Navbar)
+
+Should display:
+
+Number of items
+
+Link to cart page
+
+Example:
+
+Cart (3)
+1️⃣2️⃣ Mobile Responsiveness
+
+Required behavior:
+
+Filters collapse into dropdown
+
+Product grid adjusts
+
+Buttons full width
+
+1️⃣3️⃣ Performance Requirements
+Element	Target
+Page load	< 2 seconds
+Image size	< 200KB
+Products per page	12
+1️⃣4️⃣ Accessibility
+
+Required:
+
+Alt text on images
+
+Keyboard navigation
+
+Clear buttons
+
+Readable fonts
+
+1️⃣5️⃣ SEO Requirements
+
+Include:
+
+Page title
+
+Meta description
+
+Structured product data
+
+Descriptive URLs
+
+Example:
+
+/shop/lfs-running-shirt

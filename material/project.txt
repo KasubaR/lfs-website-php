@@ -1,0 +1,77 @@
+lfs-website/
+│
+├── src/
+│   ├── app.js                 # Express app setup
+│   ├── server.js              # Server entry point
+│   │
+│   ├── config/
+│   │   ├── db.js              # Database connection
+│   │   ├── env.js             # Environment variables loader
+│   │   └── payment.js         # Payment gateway config
+│   │
+│   ├── routes/
+│   │   ├── index.routes.js
+│   │   ├── auth.routes.js
+│   │   ├── users.routes.js
+│   │   ├── members.routes.js
+│   │   ├── events.routes.js
+│   │   ├── gallery.routes.js
+│   │   ├── shop.routes.js
+│   │   ├── orders.routes.js
+│   │   ├── blog.routes.js
+│   │   └── admin.routes.js
+│   │
+│   ├── controllers/
+│   │   ├── auth.controller.js
+│   │   ├── users.controller.js
+│   │   ├── members.controller.js
+│   │   ├── events.controller.js
+│   │   ├── gallery.controller.js
+│   │   ├── shop.controller.js
+│   │   ├── orders.controller.js
+│   │   ├── blog.controller.js
+│   │   └── admin.controller.js
+│   │
+│   ├── models/
+│   │   ├── User.js
+│   │   ├── Member.js
+│   │   ├── Event.js
+│   │   ├── Gallery.js
+│   │   ├── Product.js
+│   │   ├── Order.js
+│   │   └── Blog.js
+│   │
+│   ├── middleware/
+│   │   ├── auth.middleware.js
+│   │   ├── upload.middleware.js
+│   │   ├── error.middleware.js
+│   │   └── admin.middleware.js
+│   │
+│   ├── services/
+│   │   ├── payment.service.js
+│   │   ├── email.service.js
+│   │   └── storage.service.js
+│   │
+│   ├── utils/
+│   │   ├── logger.js
+│   │   ├── helpers.js
+│   │   └── constants.js
+│   │
+│   ├── views/                 # If using server-side rendering
+│   │   ├── layouts/
+│   │   ├── pages/
+│   │   └── partials/
+│   │
+│   └── public/
+│       ├── css/
+│       ├── js/
+│       ├── images/
+│       └── uploads/
+│
+├── tests/
+│   └── api.test.js
+│
+├── .env
+├── .gitignore
+├── package.json
+└── README.md

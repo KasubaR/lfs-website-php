@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+
+# User-uploaded media (gallery) — keep directory via .gitkeep
+public/uploads/gallery/*
+!public/uploads/gallery/.gitkeep
+
+# Logs and runtime
+*.log
+npm-debug.log*
+.DS_Store
+
+# Build / cache (if added later)
+dist/
+.cache/

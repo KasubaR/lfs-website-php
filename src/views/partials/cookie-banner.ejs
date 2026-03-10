@@ -1,0 +1,150 @@
+<%# LFS cookie-banner partial. Renders when res.locals.showBanner is true (set by cookie.middleware attachLocals). Include in layout before body close; enhanced by cookie-banner.js. %>
+
+<% if (showBanner) { %>
+<div
+  id="lfs-cookie-banner"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Cookie consent"
+  aria-describedby="lfs-cookie-desc"
+>
+  <!-- Zambian flag stripe across the top -->
+  <div class="lfs-cookie-flag-bar"></div>
+
+  <!-- ── Main body ─────────────────────────────────────────── -->
+  <div class="lfs-cookie-body" id="lfs-cookie-main">
+
+    <div class="lfs-cookie-text">
+      <p class="lfs-cookie-title">🍪 We use cookies</p>
+      <p class="lfs-cookie-desc" id="lfs-cookie-desc">
+        LFS uses cookies to keep the site running and to understand how you
+        engage with our community. You're in full control.
+        <a href="/privacy" class="lfs-cookie-link">Privacy Policy</a>
+      </p>
+    </div>
+
+    <div class="lfs-cookie-actions">
+
+      <!-- Accept All — JS progressive; falls back to form POST -->
+      <form method="POST" action="/cookies/consent" class="lfs-cookie-form">
+        <input type="hidden" name="accept"   value="all">
+        <input type="hidden" name="redirect" value="<%= currentPath %>">
+        <button type="submit" id="lfs-cookie-accept-all" class="lfs-btn lfs-btn-green">
+          Accept All
+        </button>
+      </form>
+
+      <!-- Necessary Only -->
+      <form method="POST" action="/cookies/consent" class="lfs-cookie-form">
+        <input type="hidden" name="accept"   value="necessary">
+        <input type="hidden" name="redirect" value="<%= currentPath %>">
+        <button type="submit" id="lfs-cookie-necessary" class="lfs-btn lfs-btn-outline">
+          Necessary Only
+        </button>
+      </form>
+
+      <!-- Manage — reveals granular panel via JS -->
+      <button
+        type="button"
+        id="lfs-cookie-manage"
+        class="lfs-btn lfs-btn-ghost"
+        aria-expanded="false"
+        aria-controls="lfs-cookie-prefs"
+      >
+        Manage
+      </button>
+
+    </div>
+  </div><!-- /.lfs-cookie-body -->
+
+  <!-- ── Granular preferences panel (hidden by default) ────── -->
+  <div id="lfs-cookie-prefs" class="lfs-cookie-prefs" hidden>
+
+    <p class="lfs-prefs-title">Cookie Preferences</p>
+
+    <form method="POST" action="/cookies/consent" id="lfs-prefs-form">
+      <input type="hidden" name="redirect" value="<%= currentPath %>">
+
+      <ul class="lfs-prefs-list">
+
+        <!-- Necessary — always on; disabled so it is not submitted (server forces true) -->
+        <li class="lfs-pref-item">
+          <span>
+            <strong>Necessary</strong>
+            <small>Required for the site to function. Cannot be disabled.</small>
+          </span>
+          <input
+            type="checkbox"
+            id="pref-necessary"
+            name="necessary"
+            value="true"
+            checked
+            disabled
+            aria-label="Necessary cookies (always active)"
+          >
+        </li>
+
+        <!-- Analytics -->
+        <li class="lfs-pref-item">
+          <span>
+            <strong>Analytics</strong>
+            <small>Help us understand how visitors use the site.</small>
+          </span>
+          <input
+            type="checkbox"
+            id="pref-analytics"
+            name="analytics"
+            value="true"
+            <%= (consent && consent.analytics) ? 'checked' : '' %>
+            aria-label="Analytics cookies"
+          >
+        </li>
+
+        <!-- Preferences -->
+        <li class="lfs-pref-item">
+          <span>
+            <strong>Preferences</strong>
+            <small>Remember your settings (theme, language, etc.).</small>
+          </span>
+          <input
+            type="checkbox"
+            id="pref-preferences"
+            name="preferences"
+            value="true"
+            <%= (consent && consent.preferences) ? 'checked' : '' %>
+            aria-label="Preference cookies"
+          >
+        </li>
+
+        <!-- Marketing -->
+        <li class="lfs-pref-item">
+          <span>
+            <strong>Marketing</strong>
+            <small>Personalised content &amp; advertising.</small>
+          </span>
+          <input
+            type="checkbox"
+            id="pref-marketing"
+            name="marketing"
+            value="true"
+            <%= (consent && consent.marketing) ? 'checked' : '' %>
+            aria-label="Marketing cookies"
+          >
+        </li>
+
+      </ul>
+
+      <div class="lfs-prefs-actions">
+        <button type="submit" id="lfs-cookie-save-prefs" class="lfs-btn lfs-btn-green">
+          Save Preferences
+        </button>
+        <button type="button" id="lfs-cookie-back" class="lfs-btn lfs-btn-ghost">
+          ← Back
+        </button>
+      </div>
+
+    </form><!-- /#lfs-prefs-form -->
+  </div><!-- /#lfs-cookie-prefs -->
+
+</div><!-- /#lfs-cookie-banner -->
+<% } %>
