@@ -84,8 +84,6 @@
       <a href="mailto:info@lfszambia.run">info@lfszambia.run</a>
       &nbsp;·&nbsp;
       <a href="https://www.lfszambia.run" target="_blank" rel="noopener">www.lfszambia.run</a>
-      &nbsp;·&nbsp;
-      <a href="<?= BASE_PATH ?>/admin/dashboard">Admin</a>
     </span>
   </div>
 
