@@ -281,10 +281,11 @@ class GalleryController
     /** POST /admin/gallery/settings */
     public function updateSettings(): void
     {
-        $bodyUrl = trim($_POST['bannerImageUrl'] ?? '');
+        $bodyUrl      = trim($_POST['bannerImageUrl'] ?? '');
+        $removeBanner = !empty($_POST['removeBanner']);
 
         try {
-            $banner = $this->resolveUploadedGalleryBanner($bodyUrl);
+            $banner = $removeBanner ? null : $this->resolveUploadedGalleryBanner($bodyUrl);
             $this->galleryService->setGalleryBanner($banner);
         } catch (Throwable $e) {
             error_log('[LFS Admin Gallery] updateSettings error: ' . $e->getMessage());

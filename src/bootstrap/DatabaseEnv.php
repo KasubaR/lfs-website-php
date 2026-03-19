@@ -1,0 +1,71 @@
+<?php
+/**
+ * Load database credentials from a .env file into the process environment.
+ * Only variables whose names match DB_* are applied (nothing else from the file is read).
+ *
+ * @see Database.php — reads DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASS, DB_CHARSET
+ */
+declare(strict_types=1);
+
+final class DatabaseEnv
+{
+    private const KEY_PATTERN = '/^DB_[A-Z][A-Z0-9_]*$/';
+
+    /**
+     * Parse $path and set matching DB_* keys via putenv() and $_ENV.
+     * Missing or unreadable file is a no-op (Database.php uses its own defaults).
+     */
+    public static function load(string $path): void
+    {
+        if (!is_file($path) || !is_readable($path)) {
+            return;
+        }
+
+        $content = file_get_contents($path);
+        if ($content === false) {
+            return;
+        }
+
+        foreach (self::splitLines($content) as $line) {
+            $line = trim($line);
+            if ($line === '' || str_starts_with($line, '#')) {
+                continue;
+            }
+            if (str_starts_with($line, 'export ')) {
+                $line = trim(substr($line, 7));
+            }
+            $eq = strpos($line, '=');
+            if ($eq === false) {
+                continue;
+            }
+            $key = trim(substr($line, 0, $eq));
+            if ($key === '' || !preg_match(self::KEY_PATTERN, $key)) {
+                continue;
+            }
+            $value = self::parseValue(trim(substr($line, $eq + 1)));
+            putenv($key . '=' . $value);
+            $_ENV[$key] = $value;
+        }
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function splitLines(string $content): array
+    {
+        return preg_split("/\r\n|\n|\r/", $content) ?: [];
+    }
+
+    private static function parseValue(string $raw): string
+    {
+        $len = strlen($raw);
+        if ($len >= 2) {
+            $q = $raw[0];
+            if (($q === '"' || $q === "'") && $raw[$len - 1] === $q) {
+                $inner = substr($raw, 1, -1);
+                return $q === '"' ? stripcslashes($inner) : $inner;
+            }
+        }
+        return $raw;
+    }
+}

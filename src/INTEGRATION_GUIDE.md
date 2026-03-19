@@ -54,21 +54,17 @@ Meanwhile, Lenco also POSTs to:
 
 ## Step 1 — Set environment variables
 
-Add to your `index.php` (already has `putenv()` calls):
+Database credentials live in a **project root** `.env` file (copy from `env.example`). Only `DB_*` keys are read from that file; see `src/bootstrap/DatabaseEnv.php`.
+
+Add Lenco keys to `public/index.php` (or your server environment) via `putenv()`:
 
 ```php
 // Lenco API
 putenv('LENCO_API_SECRET_KEY=your_actual_lenco_secret_key');
 putenv('LENCO_WEBHOOK_SECRET=your_lenco_webhook_hmac_secret');
-
-// These you already have:
-putenv('DB_HOST=localhost');
-putenv('DB_NAME=lfs_db');
-putenv('DB_USER=root');
-putenv('DB_PASS=');
 ```
 
-> ⚠️ Never commit real keys. For production, use server environment variables or a `.env` file outside the webroot.
+> ⚠️ Never commit real keys. `.env` is gitignored; use different `.env` files per machine without merge conflicts.
 
 ---
 

@@ -28,14 +28,18 @@
     <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken ?? '') ?>">
 
     <div class="admin-form__field">
-      <label class="form-label" for="bannerImageFile">Gallery banner image</label>
+      <label class="admin-label" for="bannerImageFile">Gallery Banner Image</label>
 
       <?php if (!empty($bannerImage)): ?>
-        <div class="settings-banner-preview">
-          <p class="settings-banner-preview__label">Current banner:</p>
+        <div style="margin-bottom:0.75rem;">
+          <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:0.4rem;">Current banner:</p>
           <img src="<?= htmlspecialchars($bannerImage) ?>"
                alt="Current gallery banner"
-               class="settings-banner-preview__img">
+               style="max-width:100%;max-height:180px;object-fit:cover;border-radius:var(--radius-sm);border:1px solid var(--border-color);">
+          <label style="display:flex;align-items:center;gap:0.5rem;margin-top:0.6rem;font-size:0.85rem;color:var(--flag-red);cursor:pointer;">
+            <input type="checkbox" name="removeBanner" value="1">
+            Remove current banner
+          </label>
         </div>
       <?php endif; ?>
 
@@ -44,11 +48,11 @@
              name="bannerImageFile"
              accept="image/jpeg,image/png,image/webp"
              class="admin-input">
-      <p class="form-hint">Upload an image or paste a URL below. Leave both empty for no banner.</p>
+      <p style="font-size:0.78rem;color:var(--text-dim);margin-top:0.35rem;">Upload an image or paste a URL below. Leave both empty to remove the banner.</p>
     </div>
 
     <div class="admin-form__field">
-      <label class="form-label" for="bannerImageUrl">Or banner image URL</label>
+      <label class="admin-label" for="bannerImageUrl">Or Banner Image URL</label>
       <input type="text"
              id="bannerImageUrl"
              name="bannerImageUrl"
@@ -58,10 +62,10 @@
     </div>
 
     <div class="admin-form__actions">
-      <button type="submit" class="btn-action btn-action--primary">
-        <i class="fas fa-save"></i> Save settings
+      <button type="submit" class="admin-btn admin-btn--primary">
+        <i class="fas fa-save"></i> Save Settings
       </button>
-      <a href="/admin/gallery/albums" class="btn-action btn-action--ghost">
+      <a href="/admin/gallery" class="admin-btn admin-btn--ghost">
         Cancel
       </a>
     </div>

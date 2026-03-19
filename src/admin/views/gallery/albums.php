@@ -112,11 +112,11 @@ $currentYear    = (int) date('Y');
   </form>
 
   <!-- Create Album -->
-  <a href="/admin/gallery/albums/create" class="btn-action btn-action--primary">
+  <a href="/admin/gallery/albums/create" class="admin-btn admin-btn--primary">
     <i class="fas fa-plus"></i> New Album
   </a>
-  <a href="/admin/gallery/settings" class="btn-action btn-action--ghost">
-    <i class="fas fa-image"></i> Gallery settings
+  <a href="/admin/gallery/settings" class="admin-btn admin-btn--ghost">
+    <i class="fas fa-image"></i> Gallery Settings
   </a>
 
 </div>

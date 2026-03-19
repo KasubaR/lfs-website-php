@@ -1,12 +1,11 @@
 <?php
 declare(strict_types=1);
 
-// XAMPP local DB settings for local testing
-putenv('DB_HOST=localhost');
-putenv('DB_PORT=3306');
-putenv('DB_NAME=lfs_db');   // must match your database name
-putenv('DB_USER=root');     // default XAMPP MySQL user
-putenv('DB_PASS=');         // empty password if root has no password
+$lfsRoot = dirname(__DIR__);
+require_once $lfsRoot . '/src/bootstrap/DatabaseEnv.php';
+DatabaseEnv::load($lfsRoot . '/.env');
+
+// Non-database settings (keep out of .env if you prefer; override via real server env as needed)
 putenv('APP_ENV=development');
 putenv('ADMIN_PASSWORD_HASH=$2y$12$Rlf3PkcaJd3hMctBA.FZn.tECeMJiQk25DYBnIBZIi1OlpW4o26y.');
 
