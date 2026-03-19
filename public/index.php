@@ -3,7 +3,8 @@ declare(strict_types=1);
 
 $lfsRoot = dirname(__DIR__);
 require_once $lfsRoot . '/src/bootstrap/DatabaseEnv.php';
-DatabaseEnv::load($lfsRoot . '/.env');
+// .env next to this file (e.g. public_html/.env when DocumentRoot is public/)
+DatabaseEnv::load(__DIR__ . '/.env');
 
 // Non-database settings (keep out of .env if you prefer; override via real server env as needed)
 putenv('APP_ENV=development');

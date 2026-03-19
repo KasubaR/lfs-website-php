@@ -54,7 +54,7 @@ Meanwhile, Lenco also POSTs to:
 
 ## Step 1 — Set environment variables
 
-Database credentials live in a **project root** `.env` file (copy from `env.example`). Only `DB_*` keys are read from that file; see `src/bootstrap/DatabaseEnv.php`.
+Database credentials live in **`public/.env`** next to `public/index.php` (copy from `env.example`). If you use the repo root `index.php` entry instead, put `.env` in the **project root**. Only `DB_*` keys are read; see `src/bootstrap/DatabaseEnv.php`.
 
 Add Lenco keys to `public/index.php` (or your server environment) via `putenv()`:
 
