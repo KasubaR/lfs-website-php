@@ -21,7 +21,7 @@
 
   <!-- Logo → home -->
   <a href="<?= BASE_PATH ?>/#hero" class="lfs-nav__logo" aria-label="LFS — Home">
-    <img src="<?= BASE_PATH ?>/images/Logo/1024%20512%20LFS_1024.svg" alt="LFS — Lusaka Fitness Squad" />
+    <img src="<?= htmlspecialchars(lfs_public_url('/images/Logo/1024%20512%20LFS_1024.svg'), ENT_QUOTES, 'UTF-8') ?>" alt="LFS — Lusaka Fitness Squad" />
   </a>
 
   <!-- Desktop links -->

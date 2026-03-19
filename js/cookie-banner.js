@@ -1,6 +1,6 @@
 /* ============================================================
    LFS — Lusaka Fitness Squad
-   public/js/cookie-banner.js
+   js/cookie-banner.js (web root)
    
    Handles:
      • Showing the cookie consent banner if no decision exists

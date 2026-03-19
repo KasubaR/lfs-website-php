@@ -62,11 +62,11 @@ lfs-website/
 │   │   ├── pages/
 │   │   └── partials/
 │   │
-│   └── public/
-│       ├── css/
-│       ├── js/
-│       ├── images/
-│       └── uploads/
+│
+├── css/                       # static assets (web root; PHP layout)
+├── js/
+├── images/
+├── uploads/
 │
 ├── tests/
 │   └── api.test.js

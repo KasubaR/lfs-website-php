@@ -3,7 +3,7 @@
  * LFS — Lusaka Fitness Squad
  * src/routes/contact.php — Contact page router
  *
- * Mount point: /contact  (registered in public/index.php)
+ * Mount point: /contact  (registered in project index.php)
  *
  * Routes:
  *   GET  /contact        → render the contact page (with FAQs)

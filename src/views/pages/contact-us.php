@@ -53,7 +53,7 @@
     <div class="relative order-first md:order-none contact-page-image-wrap" data-reveal="right">
       <div class="aspect-[4/5] md:aspect-square rounded-lg overflow-hidden shadow-xl contact-page-image">
         <img
-          src="/images/contact.jpg"
+          src="<?= htmlspecialchars(lfs_public_url('/images/contact-us/contact-us.jpg'), ENT_QUOTES, 'UTF-8') ?>"
           alt="LFS runners together at a group run"
           class="w-full h-full object-cover"
           loading="lazy">
@@ -108,7 +108,7 @@
   <!-- Contact form -->
   <!-- data-native-submit: tells main.js initContactForm() NOT to intercept this form.
        This form POSTs natively to /contact (src/routes/contact.php).
-       Remove only if you also update initContactForm() in public/js/main.js. -->
+       Remove only if you also update initContactForm() in js/main.js. -->
   <div class="p-8 rounded-lg border lfs-form lfs-form--dark"
        style="background:var(--black-soft);border-color:rgba(255,255,255,0.1)"
        data-reveal="right"

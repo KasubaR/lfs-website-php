@@ -13,7 +13,7 @@ $total        = 'K ' . number_format((float)($order['total'] ?? 0), 2);
 $status       = $order['status'] ?? 'pending_payment';
 $items        = $order['items'] ?? [];
 
-$styles  = '<link rel="stylesheet" href="/css/checkout.css">';
+$styles  = '<link rel="stylesheet" href="' . htmlspecialchars(lfs_public_url('/css/checkout.css'), ENT_QUOTES, 'UTF-8') . '">';
 ?>
 
 <div class="checkout-header">

@@ -1,6 +1,6 @@
 /* ============================================================
    LFS — Lusaka Fitness Squad
-   src/public/js/shop.js
+   js/shop.js (web root)
    
    Handles:
      • Filter sidebar mobile toggle

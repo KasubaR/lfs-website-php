@@ -1,6 +1,6 @@
 /* ============================================================
    LFS — Lusaka Fitness Squad
-   src/public/css/shop.css
+   css/shop.css (web root)
 
    Shop-specific styles. Loaded only on /shop pages.
    Depends on: main.css (design tokens + base components)

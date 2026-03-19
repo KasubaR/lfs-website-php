@@ -2,24 +2,36 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/src/bootstrap/DatabaseEnv.php';
-DatabaseEnv::load(__DIR__ . '/.env');
+
+$lfsRoot = __DIR__;
+DatabaseEnv::load($lfsRoot . '/.env');
 
 // Non-database settings (override via real server env as needed)
 putenv('APP_ENV=development');
-putenv('ADMIN_PASSWORD_HASH=$2y$12$Rlf3PkcaJd3hMctBA.FZn.tECeMJiQk25DYBnIBZIi1OlpW4o26y.');//hash of password "password"    
+putenv('ADMIN_PASSWORD_HASH=$2y$12$Rlf3PkcaJd3hMctBA.FZn.tECeMJiQk25DYBnIBZIi1OlpW4o26y.'); // hash of password "password"
+
+// Lenco payment API — get keys from https://dashboard.lenco.co (or Lenco docs)
+// Set these for checkout/payments to work; leave empty to disable Lenco (shop will still load).
+putenv('LENCO_API_SECRET_KEY=');        // e.g. your Lenco API secret key
+putenv('LENCO_WEBHOOK_SECRET=');        // optional: for webhook signature verification
 
 /**
- * LFS — Front Controller
+ * LFS — Front Controller (project root)
  *
- * Main entry point for the PHP app.
- * - Figures out the current path and HTTP method
- * - Normalises the base path (when the project is in a subfolder)
- * - Dispatches to either the public router or the admin router
+ * DocumentRoot should be this folder. Static assets (css/, js/, images/, uploads/) live here alongside index.php.
+ *
+ * - Normalises the URL when the app lives in a subfolder
+ * - Dispatches to admin, shop, contact, gallery, cookies, api, or the public router
  */
 
 // Important paths
 define('APP_ROOT', __DIR__ . '/src');
-define('PUBLIC_ROOT', __DIR__ . '/public');
+define('PUBLIC_ROOT', __DIR__);
+
+// Blog list caching (APCu) — see BlogPostService docs
+if (!defined('BLOG_LIST_CACHE_TTL')) {
+    define('BLOG_LIST_CACHE_TTL', 120);
+}
 
 // HTTP method
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
@@ -40,14 +52,22 @@ if (!defined('BASE_PATH')) {
     define('BASE_PATH', ($scriptDir === '' || $scriptDir === '/') ? '' : $scriptDir);
 }
 
+require_once APP_ROOT . '/utility/helpers.php';
+
 // Turn path into segments
 $trimmed  = trim($path, '/');
 $segments = $trimmed === '' ? [] : explode('/', $trimmed);
 $first    = $segments[0] ?? '';
 
+// API routing: /api/...
+if ($first === 'api') {
+    $segments = array_slice($segments, 1);
+    require APP_ROOT . '/admin/routes/api.php';
+    exit;
+}
+
 // Admin routing: /admin/...
 if ($first === 'admin') {
-    // Pass everything after "admin" to the admin router
     $segments = array_slice($segments, 1);
     require APP_ROOT . '/admin/routes/admin.php';
     exit;
@@ -55,7 +75,6 @@ if ($first === 'admin') {
 
 // Shop routing: /shop/...
 if ($first === 'shop') {
-    // Pass everything after "shop" to the shop router
     $segments = array_slice($segments, 1);
     require APP_ROOT . '/routes/shop.php';
     exit;
@@ -63,7 +82,6 @@ if ($first === 'shop') {
 
 // Contact routing: /contact/...
 if ($first === 'contact') {
-    // Pass everything after "contact" to the contact router
     $segments = array_slice($segments, 1);
     require APP_ROOT . '/routes/contact.php';
     exit;
@@ -71,7 +89,6 @@ if ($first === 'contact') {
 
 // Gallery routing: /gallery/...
 if ($first === 'gallery') {
-    // Pass everything after "gallery" to the gallery router
     $segments = array_slice($segments, 1);
     require APP_ROOT . '/routes/gallery.php';
     exit;
@@ -79,7 +96,6 @@ if ($first === 'gallery') {
 
 // Cookies routing: /cookies/...
 if ($first === 'cookies') {
-    // Pass everything after "cookies" to the cookies router
     $segments = array_slice($segments, 1);
     require APP_ROOT . '/routes/cookies.php';
     exit;
@@ -87,4 +103,3 @@ if ($first === 'cookies') {
 
 // Public routing: everything else goes through the main public router
 require APP_ROOT . '/routes/index.php';
-

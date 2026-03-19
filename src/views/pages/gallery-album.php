@@ -180,5 +180,5 @@
   ], $media ?? []);
   $extraScripts = '<script>var LB_MEDIA = '
       . json_encode($lbData, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE)
-      . ';</script><script src="/js/gallery-lightbox.js"></script>';
+      . ';</script><script src="' . htmlspecialchars(lfs_public_url('/js/gallery-lightbox.js'), ENT_QUOTES, 'UTF-8') . '"></script>';
 ?>

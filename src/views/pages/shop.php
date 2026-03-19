@@ -10,7 +10,7 @@
    ============================================================ */
 
 // Inject page-level stylesheet into the layout
-$styles = '<link rel="stylesheet" href="/css/shop.css">';
+$styles = '<link rel="stylesheet" href="' . htmlspecialchars(lfs_public_url('/css/shop.css'), ENT_QUOTES, 'UTF-8') . '">';
 ?>
 
 <!-- ══════════════════════════════════════════
@@ -354,4 +354,4 @@ $styles = '<link rel="stylesheet" href="/css/shop.css">';
 </script>
 
 <!-- Page JS -->
-<?php $scripts = '<script src="/js/shop.js"></script>'; ?>
+<?php $scripts = '<script src="' . htmlspecialchars(lfs_public_url('/js/shop.js'), ENT_QUOTES, 'UTF-8') . '"></script>'; ?>

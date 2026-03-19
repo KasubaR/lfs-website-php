@@ -1,7 +1,7 @@
 <?php /* pages/shop-cart.php — Cart page
    Locals: $cart[], $itemCount, $subtotal (formatted string), $cartCount
 */ ?>
-<?php $extraStyles = '<link rel="stylesheet" href="/css/cart.css">'; ?>
+<?php $extraStyles = '<link rel="stylesheet" href="' . htmlspecialchars(lfs_public_url('/css/cart.css'), ENT_QUOTES, 'UTF-8') . '">'; ?>
 
 <!-- ══════════════════════════════════════════
      PAGE HEADER

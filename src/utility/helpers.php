@@ -16,6 +16,7 @@
  *   lfs_toTitleCase(str)
  *   lfs_categoryLabel(slug)
  *   lfs_buildProductJsonLd(product, siteUrl)
+ *   lfs_public_url(path)   — static asset URL (handles subfolder installs)
  *
  * All functions are prefixed with `lfs_` to avoid collisions with PHP
  * built-ins or other includes. Import into controllers with:
@@ -26,6 +27,27 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../model/Product.php';
+
+/* ════════════════════════════════════════════════════════════
+   PUBLIC ASSET URLS
+   ════════════════════════════════════════════════════════════ */
+
+/**
+ * URL path for a static asset (e.g. '/css/main.css').
+ * Prepends BASE_PATH when the app is installed in a subfolder.
+ */
+function lfs_public_url(string $path): string
+{
+    $path = '/' . ltrim($path, '/');
+    $base = '';
+    if (defined('BASE_PATH')) {
+        $bp = (string) BASE_PATH;
+        if ($bp !== '' && $bp !== '/') {
+            $base = rtrim($bp, '/');
+        }
+    }
+    return $base . $path;
+}
 
 /* ════════════════════════════════════════════════════════════
    PRICE FORMATTING

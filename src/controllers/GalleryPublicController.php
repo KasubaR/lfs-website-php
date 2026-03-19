@@ -15,7 +15,7 @@ class GalleryPublicController
 {
     private GalleryService $galleryService;
 
-    /** Folder name inside public/images/ used as offline fallback. */
+    /** Folder name inside images/ (under PUBLIC_ROOT) used as offline fallback. */
     private const FALLBACK_FOLDER = '21.02.2026-LSD';
 
     /** Recognised image extensions for the fallback scanner. */
@@ -115,7 +115,7 @@ class GalleryPublicController
     {
         $publicRoot   = defined('PUBLIC_ROOT')
             ? PUBLIC_ROOT
-            : realpath(__DIR__ . '/../../public');
+            : realpath(__DIR__ . '/../..');
         $folderPath   = rtrim((string)$publicRoot, '/') . '/images/' . self::FALLBACK_FOLDER;
         $baseUrl      = '/images/' . self::FALLBACK_FOLDER;
 

@@ -175,7 +175,7 @@ class LencoService
     private function request(string $method, string $url, array $body = [], int $attempt = 0): array
     {
         if ($this->apiKey === '') {
-            throw new \RuntimeException('LENCO_API_SECRET_KEY environment variable is not set. Set it in public/index.php (or your env) to enable payments.');
+            throw new \RuntimeException('LENCO_API_SECRET_KEY environment variable is not set. Set it in index.php (or your env) to enable payments.');
         }
 
         $ch = curl_init();

@@ -20,8 +20,8 @@ $total      = $total      ?? 'K 0';
 $csrfToken  = $csrfToken  ?? '';
 
 // Page-specific assets (picked up by main layout)
-$styles  = '<link rel="stylesheet" href="/css/checkout.css">';
-$scripts = '<script src="/js/checkout.js"></script>';
+$styles  = '<link rel="stylesheet" href="' . htmlspecialchars(lfs_public_url('/css/checkout.css'), ENT_QUOTES, 'UTF-8') . '">';
+$scripts = '<script src="' . htmlspecialchars(lfs_public_url('/js/checkout.js'), ENT_QUOTES, 'UTF-8') . '"></script>';
 ?>
 
 <!-- ══════════════════════════════════════════════════════════

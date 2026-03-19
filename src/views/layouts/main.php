@@ -9,8 +9,8 @@
   <meta name="theme-color" content="#0f0f0f">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="/images/Logo/1024%20512%20LFS_512x512%201.svg">
-  <link rel="alternate icon" href="/images/Logo/1024%20512%20LFS_512x512%201.svg">
+  <link rel="icon" type="image/svg+xml" href="<?= htmlspecialchars(lfs_public_url('/images/Logo/1024%20512%20LFS_512x512%201.svg'), ENT_QUOTES, 'UTF-8') ?>">
+  <link rel="alternate icon" href="<?= htmlspecialchars(lfs_public_url('/images/Logo/1024%20512%20LFS_512x512%201.svg'), ENT_QUOTES, 'UTF-8') ?>">
 
   <!-- Open Graph -->
   <meta property="og:title" content="<?= isset($title) ? htmlspecialchars($title) . ' — LFS' : 'LFS — Lusaka Fitness Squad' ?>">
@@ -27,11 +27,11 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <!-- Tailwind (built; run npm run build:css to regenerate) -->
-  <link rel="stylesheet" href="/css/tailwind-build.css">
+  <link rel="stylesheet" href="<?= htmlspecialchars(lfs_public_url('/css/tailwind-build.css'), ENT_QUOTES, 'UTF-8') ?>">
   <!-- LFS custom utilities and tokens -->
-  <link rel="stylesheet" href="/css/tailwind.css">
-  <link rel="stylesheet" href="/css/main.css">
-  <link rel="stylesheet" href="/css/cookie-banner.css">
+  <link rel="stylesheet" href="<?= htmlspecialchars(lfs_public_url('/css/tailwind.css'), ENT_QUOTES, 'UTF-8') ?>">
+  <link rel="stylesheet" href="<?= htmlspecialchars(lfs_public_url('/css/main.css'), ENT_QUOTES, 'UTF-8') ?>">
+  <link rel="stylesheet" href="<?= htmlspecialchars(lfs_public_url('/css/cookie-banner.css'), ENT_QUOTES, 'UTF-8') ?>">
 
   <!-- Page-specific styles (optional) -->
   <?= ($styles ?? '') . ($extraStyles ?? '') ?>
@@ -59,13 +59,13 @@
 
   <!-- Cookie consent banner -->
   <?php require __DIR__ . '/../partials/cookie-banner.php'; ?>
-  <script src="/js/cookie-banner.js"></script>
+  <script src="<?= htmlspecialchars(lfs_public_url('/js/cookie-banner.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 
   <!-- Global JS -->
   <script>window.__LFS_CART_COUNT__ = <?= $cartCount ?>;</script>
-  <script src="/js/input-sanitizer.js"></script>
-  <script src="/js/main.js"></script>
-  <script src="/js/cart.js"></script>
+  <script src="<?= htmlspecialchars(lfs_public_url('/js/input-sanitizer.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+  <script src="<?= htmlspecialchars(lfs_public_url('/js/main.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+  <script src="<?= htmlspecialchars(lfs_public_url('/js/cart.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 
   <!-- Page-specific scripts (optional) -->
   <?= ($scripts ?? '') . ($extraScripts ?? '') ?>

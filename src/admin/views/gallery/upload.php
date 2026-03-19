@@ -288,4 +288,4 @@ $selectedAlbum = $selectedAlbum ?? '';
 <!-- ══════════════════════════════════════════════
      SCRIPTS
 ════════════════════════════════════════════════ -->
-<script src="/admin/js/gallery-upload.js"></script>
+<script src="<?= htmlspecialchars(lfs_public_url('/admin/js/gallery-upload.js'), ENT_QUOTES, 'UTF-8') ?>"></script>

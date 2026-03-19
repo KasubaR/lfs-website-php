@@ -36,7 +36,7 @@ class ProductImageUpload
     /** Base upload directory under PUBLIC_ROOT. */
     private static function uploadRoot(): string
     {
-        $root = defined('PUBLIC_ROOT') ? PUBLIC_ROOT : realpath(__DIR__ . '/../../../public');
+        $root = defined('PUBLIC_ROOT') ? PUBLIC_ROOT : realpath(__DIR__ . '/../../..');
         return rtrim((string)$root, '/') . '/uploads/products';
     }
 

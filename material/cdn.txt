@@ -56,7 +56,7 @@ your-project/
 ├── server.js
 ├── uploads/
 │   └── gallery/          ← uploaded images go here
-├── public/                ← optional: static frontend
+├── css/, js/, images/    ← static assets at web root (LFS PHP uses this; Express often uses public/)
 │   └── ...
 ```
 

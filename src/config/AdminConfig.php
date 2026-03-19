@@ -7,7 +7,7 @@
  * To generate a hash locally run:
  *   php -r "echo password_hash('your_password', PASSWORD_BCRYPT, ['cost' => 12]);"
  *
- * Then add to your public/index.php putenv() block (or .env / vhost config):
+ * Then add to your index.php putenv() block (or .env / vhost config):
  *   putenv('ADMIN_PASSWORD_HASH=$2y$12$...');
  */
 

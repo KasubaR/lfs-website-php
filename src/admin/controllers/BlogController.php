@@ -24,7 +24,7 @@ class BlogController
         $this->service    = new BlogPostService();
         $this->publicRoot = defined('PUBLIC_ROOT')
             ? PUBLIC_ROOT
-            : realpath(__DIR__ . '/../../../public');
+            : realpath(__DIR__ . '/../../..');
     }
 
     /* ════════════════════════════════════════════════════════════

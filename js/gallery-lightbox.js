@@ -1,4 +1,4 @@
-/* gallery-lightbox.js — public album image/video lightbox */
+/* gallery-lightbox.js — site gallery album image/video lightbox */
 
 var lbIdx = 0;
 

@@ -3,7 +3,7 @@
  * LFS — Lusaka Fitness Squad
  * src/admin/routes/admin.php — Admin master router
  *
- * Mount point: /admin  (registered in public/index.php front controller)
+ * Mount point: /admin  (registered in project index.php front controller)
  *
  * Expects from the front controller:
  *   $method   = $_SERVER['REQUEST_METHOD']

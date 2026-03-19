@@ -29,7 +29,7 @@ class EventBannerUpload
     /** Destination directory for saved banners. */
     private static function destDir(): string
     {
-        $root = defined('PUBLIC_ROOT') ? PUBLIC_ROOT : realpath(__DIR__ . '/../../../public');
+        $root = defined('PUBLIC_ROOT') ? PUBLIC_ROOT : realpath(__DIR__ . '/../../..');
         return rtrim($root, '/') . '/images/events';
     }
 

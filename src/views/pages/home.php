@@ -15,7 +15,7 @@ $posts          = $posts          ?? [];
 $heroSlides     = $heroSlides     ?? [];
 
 // Build ordered URL list from slider media; fall back to static image
-$_heroDefault = '/images/LSD07.02.2026-3.jpg';
+$_heroDefault = '/images/home/home-hero.jpg';
 $_slideUrls   = array_values(array_filter(array_map(function (array $s): string {
     return $s['urls']['large'] ?? $s['urls']['original'] ?? $s['urls']['medium'] ?? '';
 }, $heroSlides)));
@@ -140,19 +140,12 @@ if (empty($_slideUrls)) {
 
   <!-- Stacked images -->
   <div class="relative h-[500px]">
-    <img src="/images/whoweare.jpg"
+    <img src="<?= htmlspecialchars(lfs_public_url('/images/about/about-1.jpg'), ENT_QUOTES, 'UTF-8') ?>"
       alt="Who we are, LFS community" class="w-3/4 h-[420px] object-cover rounded absolute top-0 left-0 shadow-lg" loading="lazy">
-    <img src="/images/LFSKafueRun2025-13.jpg"
-      alt="LFS Kafue Run 2025"
-      class="w-3/5 h-72 object-cover rounded absolute bottom-0 right-0 border-8 border-[#faf8f4] shadow-lg"
+    <img src="<?= htmlspecialchars(lfs_public_url('/images/about/about-2.jpg'), ENT_QUOTES, 'UTF-8') ?>"
+      alt="LFS community"
+      class="w-3/5 h-72 object-cover rounded absolute bottom-0 right-0 shadow-lg"
       loading="lazy">
-    <!-- Years badge -->
-    <div
-      class="absolute top-1/2 left-3/4 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full flex flex-col items-center justify-center border-4 border-[#faf8f4] z-10"
-      style="background:var(--dark-green)" aria-label="7+ years of running">
-      <span class="font-['Bebas_Neue'] text-3xl" style="color:var(--green-bright)">7+</span>
-      <span class="text-[0.6rem] tracking-widest text-white/70 uppercase">Years</span>
-    </div>
   </div>
 
   <!-- Copy -->

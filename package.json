@@ -7,7 +7,7 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "dev:debug": "DEBUG=express:* nodemon src/server.js",
-    "build:css": "tailwindcss -i tailwind-input.css -o public/css/tailwind-build.css --minify",
+    "build:css": "tailwindcss -i tailwind-input.css -o css/tailwind-build.css --minify",
     "lint": "eslint . --ext .js",
     "test": "echo \"No tests configured yet\" && exit 0"
   },

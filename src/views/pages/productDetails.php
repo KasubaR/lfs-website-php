@@ -37,7 +37,7 @@ $sku          = $product['_id'] ?? $product['id'] ?? $product['slug'] ?? '';
 $lowStock     = ($product['totalStock'] ?? 0) > 0 && ($product['totalStock'] ?? 0) <= 5;
 
 // Inject page-level CSS into the layout
-$styles = '<link rel="stylesheet" href="/css/shop.css"><link rel="stylesheet" href="/css/productDetails.css">';
+$styles = '<link rel="stylesheet" href="' . htmlspecialchars(lfs_public_url('/css/shop.css'), ENT_QUOTES, 'UTF-8') . '"><link rel="stylesheet" href="' . htmlspecialchars(lfs_public_url('/css/productDetails.css'), ENT_QUOTES, 'UTF-8') . '">';
 ?>
 
 <!-- ══════════════════════════════════════════
@@ -732,4 +732,4 @@ $jsonLd = [
 </script>
 
 <!-- Page JS -->
-<?php $scripts = '<script src="/js/productDetails.js"></script>'; ?>
+<?php $scripts = '<script src="' . htmlspecialchars(lfs_public_url('/js/productDetails.js'), ENT_QUOTES, 'UTF-8') . '"></script>'; ?>

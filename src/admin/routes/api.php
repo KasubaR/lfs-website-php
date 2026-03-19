@@ -3,7 +3,7 @@
  * LFS — Lusaka Fitness Squad
  * src/admin/routes/api.php — Admin JSON API
  *
- * Mount point: /api  (dispatched from public/index.php)
+ * Mount point: /api  (dispatched from project index.php)
  * Segments on entry: everything after /api/
  *   e.g. /api/admin/stats     → ['admin', 'stats']
  *        /api/admin/activity  → ['admin', 'activity']

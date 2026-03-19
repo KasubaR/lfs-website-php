@@ -47,12 +47,12 @@ const IMAGE_EXTS_INDEX = ['webp', 'jpg', 'jpeg', 'png'];
    ════════════════════════════════════════════════════════════ */
 
 /**
- * Read fallback photos from public/images/21.02.2026-LSD when DB is unavailable.
+ * Read fallback photos from images/21.02.2026-LSD (under PUBLIC_ROOT) when DB is unavailable.
  * Returns [['urls' => ['medium'=>..., 'large'=>..., 'original'=>...], 'albumId'=>'', 'caption'=>...], ...]
  */
 function getHomepageFallbackMedia(): array
 {
-    $publicRoot  = defined('PUBLIC_ROOT') ? PUBLIC_ROOT : realpath(__DIR__ . '/../../public');
+    $publicRoot  = defined('PUBLIC_ROOT') ? PUBLIC_ROOT : realpath(__DIR__ . '/../..');
     $folderPath  = rtrim((string)$publicRoot, '/') . '/images/' . GALLERY_PREVIEW_FALLBACK_FOLDER;
     $baseUrl     = '/images/' . GALLERY_PREVIEW_FALLBACK_FOLDER;
 

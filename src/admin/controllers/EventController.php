@@ -27,7 +27,7 @@ class EventController
         $this->eventService = new EventService();
         $this->publicRoot   = defined('PUBLIC_ROOT')
             ? PUBLIC_ROOT
-            : realpath(__DIR__ . '/../../../public');
+            : realpath(__DIR__ . '/../../..');
     }
 
     /* ════════════════════════════════════════════════════════════

@@ -27,7 +27,7 @@ class ProductController
         $this->productService = new ProductService();
         $this->publicRoot     = defined('PUBLIC_ROOT')
             ? PUBLIC_ROOT
-            : realpath(__DIR__ . '/../../../public');
+            : realpath(__DIR__ . '/../../..');
         $this->uploadRoot     = rtrim($this->publicRoot, '/') . '/uploads/products';
     }
 

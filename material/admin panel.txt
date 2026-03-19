@@ -76,7 +76,7 @@ src/
  │          ├── admin.constants.js
  │          └── admin.helpers.js
  │
- └── public/
+ └── (web root)
       └── admin/
            ├── css/
            │     └── admin.css

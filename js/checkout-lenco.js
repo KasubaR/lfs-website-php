@@ -1,6 +1,6 @@
 /**
  * LFS — Lusaka Fitness Squad
- * public/js/checkout-lenco.js
+ * js/checkout-lenco.js (web root)
  *
  * Wires the checkout Step 3 to the Lenco payment API.
  *

@@ -533,11 +533,4 @@ document.addEventListener('DOMContentLoaded', () => {
   // Ripple slight delay so DOM is painted
   requestAnimationFrame(initRipple);
 
-  if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
-    console.log(
-      '%c LFS · Lusaka Fitness Squad %c We\'re In This Together ',
-      'background:#1e3a2a;color:#7ecb93;font-weight:bold;padding:4px 8px;',
-      'background:#4a7c59;color:#fff;padding:4px 8px;'
-    );
-  }
 });

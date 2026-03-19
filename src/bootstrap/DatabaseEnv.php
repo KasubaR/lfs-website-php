@@ -2,7 +2,7 @@
 /**
  * Load database credentials from a .env file into the process environment.
  * Only variables whose names match DB_* are applied (nothing else from the file is read).
- * Callers pass the full path (e.g. public/index.php uses __DIR__ . '/.env').
+ * Callers pass the full path (e.g. project root index.php loads __DIR__ . '/.env').
  *
  * @see Database.php — reads DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASS, DB_CHARSET
  */

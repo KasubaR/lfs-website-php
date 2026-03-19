@@ -7,8 +7,8 @@
 
   <!-- Background image -->
   <div class="absolute inset-0 z-0">
-    <img src="/images/LFSKafueRun2025-13.jpg"
-      alt="LFS runners at the Kafue Run 2025"
+    <img src="<?= htmlspecialchars(lfs_public_url('/images/about/about-us-hero.jpg'), ENT_QUOTES, 'UTF-8') ?>"
+      alt="LFS About Us hero"
       class="w-full h-full object-cover object-center opacity-35"
       loading="eager">
   </div>
@@ -49,20 +49,14 @@
 
     <!-- Images -->
     <div class="relative h-[480px]" data-reveal="left">
-      <img src="/images/whoweare.jpg"
+      <img src="<?= htmlspecialchars(lfs_public_url('/images/about/about-1.jpg'), ENT_QUOTES, 'UTF-8') ?>"
         alt="LFS community — who we are"
         class="w-3/4 h-[400px] object-cover rounded shadow-lg absolute top-0 left-0"
         loading="lazy">
-      <img src="/images/LFSGala2025-80.jpg"
-        alt="LFS Gala 2025"
-        class="w-3/5 h-64 object-cover rounded absolute bottom-0 right-0 border-8 border-[#faf8f4] shadow-lg"
+      <img src="<?= htmlspecialchars(lfs_public_url('/images/about/about-2.jpg'), ENT_QUOTES, 'UTF-8') ?>"
+        alt="LFS community"
+        class="w-3/5 h-64 object-cover rounded absolute bottom-0 right-0 shadow-lg"
         loading="lazy">
-      <!-- Badge -->
-      <div class="absolute top-1/2 left-3/4 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full flex flex-col items-center justify-center border-4 border-[#faf8f4] z-10"
-        style="background:var(--dark-green)" aria-label="1000+ members">
-        <span class="font-['Bebas_Neue'] text-2xl leading-none" style="color:var(--green-bright)">1000+</span>
-        <span class="text-[0.5rem] tracking-widest text-white/70 uppercase">Members</span>
-      </div>
     </div>
 
     <!-- Copy -->

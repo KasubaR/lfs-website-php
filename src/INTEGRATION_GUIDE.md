@@ -54,9 +54,9 @@ Meanwhile, Lenco also POSTs to:
 
 ## Step 1 — Set environment variables
 
-Database credentials live in **`public/.env`** next to `public/index.php` (copy from `env.example`). If you use the repo root `index.php` entry instead, put `.env` in the **project root**. Only `DB_*` keys are read; see `src/bootstrap/DatabaseEnv.php`.
+Database credentials: copy `env.example` to **project root `.env`** (same folder as `index.php`). If an old **`public/.env`** still exists from a previous layout, `index.php` loads it when root `.env` is missing. Only `DB_*` keys are read; see `src/bootstrap/DatabaseEnv.php`.
 
-Add Lenco keys to `public/index.php` (or your server environment) via `putenv()`:
+Add Lenco keys to **`index.php`** at the project root (or your server environment) via `putenv()`:
 
 ```php
 // Lenco API
@@ -90,7 +90,7 @@ Copy these files into your project:
 | `src/models/OrderModel.php` | `src/models/OrderModel.php` |
 | `src/models/PaymentModel.php` | `src/models/PaymentModel.php` |
 | `src/views/pages/order-confirmation.php` | `src/views/pages/order-confirmation.php` |
-| `public/js/checkout-lenco.js` | `public/js/checkout-lenco.js` |
+| `js/checkout-lenco.js` | `js/checkout-lenco.js` |
 
 ---
 
@@ -242,7 +242,7 @@ src/
     ├── checkout-step3-updated.php  ← NEW (paste into checkout.php)
     └── order-confirmation.php  ← NEW
 
-public/js/
+js/
 └── checkout-lenco.js           ← NEW
 
 database/

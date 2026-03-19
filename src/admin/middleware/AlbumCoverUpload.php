@@ -6,7 +6,7 @@
  * Minimal PHP middleware for handling gallery album cover uploads.
  * This is a simple implementation that:
  *   - Accepts a single file input named "cover"
- *   - Saves it into /public/uploads/gallery/covers
+ *   - Saves it into /uploads/gallery/covers (under PUBLIC_ROOT / project web root)
  *   - Returns the stored filename (not full path) on success
  *
  * The admin/routes/gallery.php file then turns that into a public URL:
@@ -45,9 +45,8 @@ class AlbumCoverUpload
             return null;
         }
 
-        // Destination directory (under public/)
-        $projectRoot = dirname(__DIR__, 3); // .../lfs-website-php
-        $destDir     = $projectRoot . '/public/uploads/gallery/covers';
+        $base    = defined('PUBLIC_ROOT') ? PUBLIC_ROOT : dirname(__DIR__, 3);
+        $destDir = $base . '/uploads/gallery/covers';
 
         if (!is_dir($destDir) && !mkdir($destDir, 0775, true) && !is_dir($destDir)) {
             $_REQUEST['_coverUploadError'] = 'Could not create covers upload directory.';

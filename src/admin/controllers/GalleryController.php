@@ -624,7 +624,7 @@ class GalleryController
 
             $publicRoot = defined('PUBLIC_ROOT')
                 ? PUBLIC_ROOT
-                : realpath(__DIR__ . '/../../../public');
+                : realpath(__DIR__ . '/../../..');
             $destDir = rtrim((string)$publicRoot, '/') . '/images/gallery';
 
             if (!is_dir($destDir) && !mkdir($destDir, 0755, true) && !is_dir($destDir)) {

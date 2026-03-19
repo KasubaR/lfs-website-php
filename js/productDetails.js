@@ -1,6 +1,6 @@
 /* ============================================================
    LFS — Lusaka Fitness Squad
-   src/public/js/productDetails.js
+   js/productDetails.js (web root)
 
    Handles:
      • Image gallery — thumbnail click + main image swap
