@@ -60,14 +60,15 @@ function getHomepageFallbackMedia(): array
 
     $files = array_filter(
         scandir($folderPath) ?: [],
-        fn (string $f): bool =>
+        // Avoid typed arrow function signatures for older PHP compatibility.
+        fn ($f) =>
             $f !== '.' && $f !== '..'
             && in_array(strtolower(pathinfo($f, PATHINFO_EXTENSION)), IMAGE_EXTS_INDEX, true)
     );
     sort($files);
     $files = array_slice(array_values($files), 0, HOMEPAGE_PREVIEW_LIMIT);
 
-    return array_map(fn (string $f): array => [
+    return array_map(fn ($f) => [
         'urls'    => ['medium' => "$baseUrl/$f", 'large' => "$baseUrl/$f", 'original' => "$baseUrl/$f"],
         'albumId' => '',
         'caption' => 'LFS — 21.02.2026 LSD',
@@ -370,7 +371,7 @@ if ($method === 'GET' && $seg0 === 'news' && ($seg1 ?? '') !== '') {
                     'date'         => $p['publishDate'] ?? null,
                     'published_at' => $p['publishDate'] ?? null,
                 ];
-            }, array_filter($relatedRaw, fn (array $p): bool => ($p['id'] ?? '') !== $post['id'])), 0, 3);
+            }, array_filter($relatedRaw, fn ($p) => ($p['id'] ?? '') !== $post['id'])), 0, 3);
         }
 
         ['posts' => $allByDate] = $blogPostService->getPosts([
