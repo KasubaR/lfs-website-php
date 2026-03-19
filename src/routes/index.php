@@ -60,45 +60,31 @@ function getHomepageFallbackMedia(): array
 
     $files = array_filter(
         scandir($folderPath) ?: [],
-        // Avoid typed arrow function signatures for older PHP compatibility.
-        function ($f) {
-            return $f !== '.'
-                && $f !== '..'
-                && in_array(
-                    strtolower(pathinfo($f, PATHINFO_EXTENSION)),
-                    IMAGE_EXTS_INDEX,
-                    true
-                );
-        }
+        fn (string $f): bool =>
+            $f !== '.' && $f !== '..'
+            && in_array(strtolower(pathinfo($f, PATHINFO_EXTENSION)), IMAGE_EXTS_INDEX, true)
     );
     sort($files);
     $files = array_slice(array_values($files), 0, HOMEPAGE_PREVIEW_LIMIT);
 
-    return array_map(function ($f) use ($baseUrl) {
-        return [
+    return array_map(fn (string $f): array => [
         'urls'    => ['medium' => "$baseUrl/$f", 'large' => "$baseUrl/$f", 'original' => "$baseUrl/$f"],
         'albumId' => '',
         'caption' => 'LFS — 21.02.2026 LSD',
-        ];
-    }, $files);
+    ], $files);
 }
 
 /** Map event category to home-page card tag colour. */
 function eventTagColor(string $category): string
 {
-    switch ($category) {
-        case 'LSD':
-            return 'green';
-        case 'Road Race':
-            return 'orange';
-        case 'Training':
-        case 'Training Camp':
-            return 'red';
-        case 'Social':
-            return 'gold';
-        default:
-            return '';
-    }
+    return match ($category) {
+        'LSD'           => 'green',
+        'Road Race'     => 'orange',
+        'Training',
+        'Training Camp' => 'red',
+        'Social'        => 'gold',
+        default         => '',
+    };
 }
 
 /** Map a service event array to the home-view shape. */
@@ -384,9 +370,7 @@ if ($method === 'GET' && $seg0 === 'news' && ($seg1 ?? '') !== '') {
                     'date'         => $p['publishDate'] ?? null,
                     'published_at' => $p['publishDate'] ?? null,
                 ];
-            }, array_filter($relatedRaw, function ($p) use ($post) {
-                return ($p['id'] ?? '') !== $post['id'];
-            })), 0, 3);
+            }, array_filter($relatedRaw, fn (array $p): bool => ($p['id'] ?? '') !== $post['id'])), 0, 3);
         }
 
         ['posts' => $allByDate] = $blogPostService->getPosts([
