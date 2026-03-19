@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 final class DatabaseEnv
 {
+    /** Keys are normalized with strtoupper() before matching (so db_host in .env becomes DB_HOST). */
     private const KEY_PATTERN = '/^DB_[A-Z][A-Z0-9_]*$/';
 
     /**
@@ -39,7 +40,7 @@ final class DatabaseEnv
             if ($eq === false) {
                 continue;
             }
-            $key = trim(substr($line, 0, $eq));
+            $key = strtoupper(trim(substr($line, 0, $eq)));
             if ($key === '' || !preg_match(self::KEY_PATTERN, $key)) {
                 continue;
             }
