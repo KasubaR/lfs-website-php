@@ -44,11 +44,16 @@ function showToast(msg, type = 'green') {
  * @param {number} count
  */
 function syncCartCount(count) {
-  // Main FAB badge (in main.ejs)
-  const fab = document.querySelector('.lfs-cart-fab__count');
+  // Main FAB badge and visibility (hidden when empty)
+  const fabCount = document.querySelector('.lfs-cart-fab__count');
+  if (fabCount) {
+    fabCount.textContent = count;
+    fabCount.style.display = count > 0 ? 'flex' : 'none';
+  }
+  const fab = document.querySelector('.lfs-cart-fab');
   if (fab) {
-    fab.textContent = count;
-    fab.style.display = count > 0 ? 'flex' : 'none';
+    if (count > 0) fab.classList.remove('lfs-cart-fab--hidden');
+    else fab.classList.add('lfs-cart-fab--hidden');
   }
 
   // Navbar cart link badge (if present)
@@ -349,15 +354,24 @@ function initQuickAdd() {
    ADD TO CART (AJAX)
    ════════════════════════════════════════════════════════════ */
 
+function getCsrfToken() {
+  const match = document.cookie.match(/(?:^|;\s*)lfs_csrf=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : '';
+}
+
 async function addToCart(productId, size, qty = 1) {
   try {
+    const headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+    };
+    const csrf = getCsrfToken();
+    if (csrf) headers['X-CSRF-Token'] = csrf;
+
     const res = await fetch('/shop/cart/add', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-      },
+      headers,
       body: JSON.stringify({ productId, size, qty }),
     });
 

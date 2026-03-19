@@ -455,6 +455,10 @@
   gap: 0.3rem;
 }
 
+.pd-form__error[hidden] {
+  display: none;
+}
+
 /* Quantity */
 .pd-qty {
   display: inline-flex;

@@ -23,10 +23,15 @@
    ════════════════════════════════════════════════════════════ */
 
 function syncCartCount(count) {
-  const fab = document.querySelector('.lfs-cart-fab__count');
+  const fabCount = document.querySelector('.lfs-cart-fab__count');
+  if (fabCount) {
+    fabCount.textContent = count;
+    fabCount.style.display = count > 0 ? 'flex' : 'none';
+  }
+  const fab = document.querySelector('.lfs-cart-fab');
   if (fab) {
-    fab.textContent = count;
-    fab.style.display = count > 0 ? 'flex' : 'none';
+    if (count > 0) fab.classList.remove('lfs-cart-fab--hidden');
+    else fab.classList.add('lfs-cart-fab--hidden');
   }
   document.querySelectorAll('[data-cart-count]').forEach((el) => {
     el.textContent = count;
@@ -236,34 +241,55 @@ async function addToCart(productId, size, qty, redirect = false) {
   if (addBtn) addBtn.classList.add('is-loading');
 
   try {
+    const csrfToken = document.cookie.replace(/\s*;\s*/g, ';').split(';').find(c => c.startsWith('lfs_csrf='))?.split('=')[1] || '';
+    const headers = {
+      'Content-Type':     'application/json',
+      'Accept':           'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+    };
+    if (csrfToken) headers['X-CSRF-Token'] = csrfToken;
+
     const res = await fetch('/shop/cart/add', {
       method:  'POST',
-      headers: {
-        'Content-Type':     'application/json',
-        'Accept':           'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-      },
+      headers,
       body: JSON.stringify({ productId, size, qty }),
     });
 
-    const data = await res.json();
-
-    if (data.ok) {
-      syncCartCount(data.itemCount);
-
-      if (redirect) {
-        window.location.href = '/shop/cart';
-        return true;
+    const contentType = res.headers.get('Content-Type') || '';
+    const text = await res.text();
+    let data = null;
+    if (contentType.includes('application/json') && text) {
+      try {
+        data = JSON.parse(text);
+      } catch (_) {
+        data = null;
       }
+    }
 
-      // Fetch product name from the page for a personalised toast
-      const name = document.querySelector('.pd-info__name')?.textContent?.trim() || 'Item';
-      showToast(`✓ ${name} added — ${data.subtotal}`, 'green');
-      return true;
-    } else {
-      showToast(data.message || 'Could not add to cart.', 'red');
+    if (data && typeof data.ok !== 'undefined') {
+      if (data.ok) {
+        syncCartCount(data.itemCount);
+
+        if (redirect) {
+          window.location.href = '/shop/cart';
+          return true;
+        }
+
+        const name = document.querySelector('.pd-info__name')?.textContent?.trim() || 'Item';
+        showToast(`✓ ${name} added — ${data.subtotal}`, 'green');
+        return true;
+      } else {
+        showToast(data.message || 'Could not add to cart.', 'red');
+        return false;
+      }
+    }
+
+    if (!res.ok) {
+      showToast(res.status === 403 ? 'Session expired. Please refresh and try again.' : 'Something went wrong. Please try again.', 'red');
       return false;
     }
+    showToast('Unexpected response. Please try again.', 'red');
+    return false;
 
   } catch (err) {
     console.error('[LFS] addToCart error:', err);

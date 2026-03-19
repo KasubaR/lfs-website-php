@@ -77,7 +77,7 @@
 
         <div class="lfs-cookie-body">
           <div class="lfs-cookie-text">
-            <p class="lfs-cookie-title">🍪 We use cookies</p>
+            <p class="lfs-cookie-title">We use cookies</p>
             <p class="lfs-cookie-desc">
               LFS uses cookies to keep the site running and to understand how
               you engage with our community. You're in control.
@@ -160,7 +160,9 @@
         z-index: 9999;
         font-family: 'DM Sans', sans-serif;
         color: #f5f2ec;
-        overflow: hidden;
+        max-height: calc(100vh - 3rem);
+        overflow-y: auto;
+        overflow-x: hidden;
         animation: lfs-slide-up 0.4s ease forwards;
       }
       @keyframes lfs-slide-up {

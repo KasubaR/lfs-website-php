@@ -10,15 +10,23 @@
    HELPERS
 ───────────────────────────────────────────────────────────── */
 
-/** Update the FAB badge count. */
+/** Update the FAB badge count and visibility (hidden when empty). */
 function updateCartBadge(count) {
   const badge = document.querySelector('.lfs-cart-fab__count');
-  if (!badge) return;
-  badge.textContent = count;
-  badge.style.display = count > 0 ? 'flex' : 'none';
+  if (badge) {
+    badge.textContent = count;
+    badge.style.display = count > 0 ? 'flex' : 'none';
+  }
 
   const fab = document.querySelector('.lfs-cart-fab');
-  if (fab) fab.setAttribute('aria-label', `View cart (${count} item${count !== 1 ? 's' : ''})`);
+  if (fab) {
+    fab.setAttribute('aria-label', `View cart (${count} item${count !== 1 ? 's' : ''})`);
+    if (count > 0) {
+      fab.classList.remove('lfs-cart-fab--hidden');
+    } else {
+      fab.classList.add('lfs-cart-fab--hidden');
+    }
+  }
 }
 
 /** Read lfs_csrf cookie value for CSRF header. */

@@ -158,6 +158,47 @@
   white-space: nowrap;
 }
 
+/* Toggle button: visible only on mobile (≤992px) */
+.events-filter-bar__toggle {
+  display: none;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-height: 48px;
+  padding: 0.75rem 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--black);
+  cursor: pointer;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.events-filter-bar__toggle .fas.fa-filter {
+  color: rgba(0,0,0,0.5);
+}
+
+.events-filter-bar__count-inline {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: rgba(0,0,0,0.45);
+}
+
+.events-filter-bar__toggle-chevron {
+  font-size: 0.7rem;
+  color: rgba(0,0,0,0.4);
+  transition: transform 0.2s ease;
+}
+
+.events-filter-bar--open .events-filter-bar__toggle-chevron {
+  transform: rotate(180deg);
+}
+
 /* ════════════════════════════════════════════════════════════
    MAIN LAYOUT
    ════════════════════════════════════════════════════════════ */
@@ -543,9 +584,34 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 992px) {
+  .events-filter-bar {
+    position: static !important;
+    top: auto;
+    padding: 0 var(--section-px);
+  }
+
+  .events-filter-bar__toggle {
+    display: flex !important;
+  }
+
+  .events-filter-bar__panel {
+    max-height: 0 !important;
+    overflow: hidden !important;
+    opacity: 0;
+    pointer-events: none;
+    transition: max-height 0.3s ease-out, opacity 0.2s ease-out;
+  }
+
+  .events-filter-bar--open .events-filter-bar__panel {
+    max-height: 520px !important;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
   .events-filter-bar__inner {
     gap: 0.5rem;
+    padding-bottom: 1rem;
   }
 
   .events-filter-bar__select-wrap {
@@ -560,6 +626,10 @@
   .events-grid,
   .past-events-list {
     grid-template-columns: 1fr;
+  }
+
+  .events-filter-bar--open .events-filter-bar__panel {
+    max-height: 580px !important;
   }
 
   .events-filter-bar__inner {

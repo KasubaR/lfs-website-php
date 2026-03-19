@@ -1,0 +1,13 @@
+RewriteEngine On
+
+# Serve favicon.ico requests as the SVG favicon (avoids a PHP 404 round-trip)
+RewriteRule ^favicon\.ico$ /favicon.svg [L,T=image/svg+xml]
+
+# If the requested path is an existing file or directory, serve it directly
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Otherwise, route everything through the front controller
+RewriteRule ^ index.php [L]
+

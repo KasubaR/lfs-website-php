@@ -492,20 +492,60 @@
   margin-left: auto;
 }
 
-/* Action buttons */
+/* Action buttons: icon + View details, same height */
 .product-card__actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  align-items: stretch;
   gap: 0.5rem;
-  margin-top: 0.5rem;
+  margin-top: 0.75rem;
 }
 
 .product-card__btn-cart,
 .product-card__btn-detail {
-  font-size: 0.72rem;
-  padding: 0.6rem 0.5rem;
+  font-size: 0.75rem;
+  padding: 0.55rem 0.75rem;
   justify-content: center;
   text-align: center;
+  align-items: center;
+  min-height: 2.5rem;
+  border-radius: var(--radius-sm, 6px);
+}
+
+/* Add to cart: compact icon button */
+.product-card__btn-cart--icon {
+  width: 2.5rem;
+  min-width: 2.5rem;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.product-card__btn-cart--icon .fa-shopping-bag {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* View details: takes remaining space */
+.product-card__btn-detail {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Out of Stock button (no --icon): don't grow, natural width */
+.product-card__btn-cart:not(.product-card__btn-cart--icon) {
+  flex: 0 0 auto;
+}
+
+/* View details: dark text/border on light card (main.css .btn-outline is for dark backgrounds) */
+.product-card .btn-outline.product-card__btn-detail,
+.product-card .product-card__btn-detail.btn-outline {
+  color: var(--black, #1a1a1a);
+  border-color: rgba(0,0,0,0.25);
+}
+
+.product-card .btn-outline.product-card__btn-detail:hover,
+.product-card .product-card__btn-detail.btn-outline:hover {
+  border-color: var(--green, #4a7c59);
+  color: var(--green, #4a7c59);
 }
 
 /* ════════════════════════════════════════════════════════════

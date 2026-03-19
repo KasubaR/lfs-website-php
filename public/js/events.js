@@ -86,11 +86,26 @@ function render() {
   if (pastLoadMore)     pastLoadMore.hidden     = pastVisible     >= totalPastMatched;
 
   // Result count in filter bar
+  const total = totalUpcomingMatched + totalPastMatched;
   const countEl = $('#events-filter-count');
-  if (countEl) {
-    const total = totalUpcomingMatched + totalPastMatched;
-    countEl.textContent = `${total} event${total !== 1 ? 's' : ''}`;
-  }
+  if (countEl) countEl.textContent = `${total} event${total !== 1 ? 's' : ''}`;
+  const countToggleEl = $('#events-filter-count-toggle');
+  if (countToggleEl) countToggleEl.textContent = total;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   FILTER BAR TOGGLE (mobile)
+───────────────────────────────────────────────────────────── */
+function initFilterBarToggle() {
+  const bar = document.getElementById('events-filter-bar');
+  const toggleBtn = document.getElementById('events-filter-toggle');
+  const panel = document.getElementById('events-filter-panel');
+  if (!bar || !toggleBtn || !panel) return;
+
+  toggleBtn.addEventListener('click', function () {
+    const isOpen = bar.classList.toggle('events-filter-bar--open');
+    toggleBtn.setAttribute('aria-expanded', isOpen);
+  });
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -163,6 +178,7 @@ function initCopyLink() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  initFilterBarToggle();
   initFilters();
   initLoadMore();
   render();

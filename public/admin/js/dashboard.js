@@ -480,6 +480,25 @@ function initDashboard() {
   setInterval(refreshActivityFeed, 30_000);
 }
 
+/**
+ * Reply form character counter (admin/messages/:id/reply).
+ */
+function initReplyCharCount() {
+  const field   = document.getElementById('reply_message');
+  const counter = document.getElementById('replyCharCount');
+  if (!field || !counter) return;
+
+  const max = Number(field.getAttribute('maxlength')) || 5000;
+
+  const update = function () {
+    const len = field.value.length;
+    counter.textContent = `${len} / ${max}`;
+  };
+
+  field.addEventListener('input', update);
+  update();
+}
+
 /* ══════════════════════════════════════════════
    DOM READY
 ════════════════════════════════════════════════ */
@@ -489,6 +508,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initFlashMessages();
   initKeyboardNav();
   initDataTables();
+  initReplyCharCount();
 
   // Only run dashboard-specific init if on dashboard page
   if (document.getElementById('dashboardData')) {

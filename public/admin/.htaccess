@@ -1,0 +1,9 @@
+RewriteEngine On
+
+# If the requested path is an existing file, serve it directly
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+
+# For /admin or any non-file under /admin, send to front controller
+RewriteRule ^ ../index.php [L]
+

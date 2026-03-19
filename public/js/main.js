@@ -10,8 +10,9 @@
 ───────────────────────────────────────────────────────────── */
 const LFS = {
   cart: {
-    items: [],
-    count: 0,
+    get items() { return JSON.parse(localStorage.getItem('lfs_cart') || '[]'); },
+    set items(v) { localStorage.setItem('lfs_cart', JSON.stringify(v)); },
+    get count() { return this.items.length; },
   },
   state: {
     navOpen: false,
@@ -36,6 +37,30 @@ const $ = (selector, ctx = document) => ctx.querySelector(selector);
  * @param {Document|Element} [ctx=document]
  */
 const $$ = (selector, ctx = document) => [...ctx.querySelectorAll(selector)];
+
+/**
+ * Open or close the mobile nav drawer. Hoisted so initNav and initA11y both use it.
+ * @param {boolean} open
+ */
+function setMobileNavOpen(open) {
+  const hamburger = $('.lfs-nav__hamburger');
+  const mobileMenu = $('.lfs-nav__mobile');
+  LFS.state.navOpen = open;
+  hamburger?.classList.toggle('open', open);
+  hamburger?.setAttribute('aria-expanded', open ? 'true' : 'false');
+  mobileMenu?.classList.toggle('open', open);
+  mobileMenu?.setAttribute('aria-hidden', open ? 'false' : 'true');
+  if (open) {
+    LFS.state.scrollY = window.scrollY;
+    document.documentElement.style.setProperty('--scroll-y', window.scrollY + 'px');
+    document.body.classList.add('mobile-nav-open');
+  } else {
+    document.body.classList.remove('mobile-nav-open');
+    if (typeof LFS.state.scrollY === 'number') {
+      window.scrollTo(0, LFS.state.scrollY);
+    }
+  }
+}
 
 /**
  * Show a toast notification
@@ -81,32 +106,32 @@ function initNav() {
 
   if (!nav) return;
 
+  function syncNavHeight() {
+    document.documentElement.style.setProperty('--nav-height', nav.offsetHeight + 'px');
+  }
+  syncNavHeight();
+
   // Scroll shrink
   window.addEventListener('scroll', () => {
     const scrolled = window.scrollY > 60;
     if (scrolled !== LFS.state.scrolled) {
       LFS.state.scrolled = scrolled;
       nav.classList.toggle('scrolled', scrolled);
+      syncNavHeight();
     }
   }, { passive: true });
 
   // Hamburger toggle
   if (hamburger && mobileMenu) {
     hamburger.addEventListener('click', () => {
-      LFS.state.navOpen = !LFS.state.navOpen;
-      hamburger.classList.toggle('open', LFS.state.navOpen);
-      mobileMenu.classList.toggle('open', LFS.state.navOpen);
+      setMobileNavOpen(!LFS.state.navOpen);
     });
   }
 
   // Close mobile menu on link click
   $$('a', mobileMenu || document).forEach(link => {
     link.addEventListener('click', () => {
-      if (LFS.state.navOpen) {
-        LFS.state.navOpen = false;
-        hamburger?.classList.remove('open');
-        mobileMenu?.classList.remove('open');
-      }
+      if (LFS.state.navOpen) setMobileNavOpen(false);
     });
   });
 
@@ -160,6 +185,14 @@ function initCart() {
   $$('.product-card__add').forEach(btn => {
     btn.addEventListener('click', () => addToCart(btn));
   });
+
+  // Hydrate badge from localStorage so count survives page navigation
+  const countEl = $('.lfs-cart-fab__count') ?? $('#cartCount');
+  if (countEl) {
+    const stored = LFS.cart.count;
+    countEl.textContent = stored;
+    countEl.style.display = stored > 0 ? 'flex' : 'none';
+  }
 }
 
 /**
@@ -172,8 +205,9 @@ function addToCart(btn) {
   const name  = card ? (card.querySelector('.product-card__name, .font-bold')?.textContent?.trim() ?? 'Item') : 'Item';
   const price = card ? (card.querySelector('.product-card__price, .font-[\'Bebas_Neue\']')?.textContent?.trim() ?? '') : '';
 
-  LFS.cart.items.push({ name, price });
-  LFS.cart.count++;
+  const items = LFS.cart.items;
+  items.push({ name, price });
+  LFS.cart.items = items;
 
   // Update FAB badge
   const countEl = $('.lfs-cart-fab__count') ?? $('#cartCount');
@@ -199,6 +233,43 @@ function addToCart(btn) {
 }
 
 /**
+ * Render a non-blocking cart summary modal.
+ */
+function showCartModal(aggregated, count) {
+  const backdrop = document.createElement('div');
+  backdrop.className = 'lfs-cart-modal-backdrop';
+
+  const plural = count > 1 ? 's' : '';
+  const itemsHtml = aggregated
+    .map(i => `<li>${i.name} &times; ${i.qty} &nbsp; ${i.price}</li>`)
+    .join('');
+
+  backdrop.innerHTML = `
+    <div class="lfs-cart-modal" role="dialog" aria-modal="true" aria-label="Cart summary">
+      <div class="lfs-cart-modal__header">
+        <p class="lfs-cart-modal__title">&#x1F6D2; LFS Cart (${count} item${plural})</p>
+        <button class="lfs-cart-modal__close" aria-label="Close cart">&times;</button>
+      </div>
+      <ul class="lfs-cart-modal__items">${itemsHtml}</ul>
+      <div class="lfs-cart-modal__contact">
+        To complete your purchase, contact:<br>
+        LFS Treasurer: Mucha Dhlamini<br>
+        &#x1F4DE; +260 962 333 651
+      </div>
+    </div>`;
+
+  const close = () => backdrop.remove();
+  backdrop.querySelector('.lfs-cart-modal__close').addEventListener('click', close);
+  backdrop.addEventListener('click', (e) => { if (e.target === backdrop) close(); });
+  document.addEventListener('keydown', function onKey(e) {
+    if (e.key === 'Escape') { close(); document.removeEventListener('keydown', onKey); }
+  });
+
+  document.body.appendChild(backdrop);
+  backdrop.querySelector('.lfs-cart-modal__close').focus();
+}
+
+/**
  * Show cart summary
  */
 function viewCart() {
@@ -207,32 +278,30 @@ function viewCart() {
     return;
   }
 
-  const itemLines = LFS.cart.items
-    .reduce((acc, item) => {
-      const existing = acc.find(i => i.name === item.name);
-      if (existing) {
-        existing.qty++;
-      } else {
-        acc.push({ name: item.name, price: item.price, qty: 1 });
-      }
-      return acc;
-    }, [])
-    .map(i => `• ${i.name} × ${i.qty}  ${i.price}`)
-    .join('\n');
+  const aggregated = LFS.cart.items.reduce((acc, item) => {
+    const existing = acc.find(i => i.name === item.name);
+    if (existing) {
+      existing.qty++;
+    } else {
+      acc.push({ name: item.name, price: item.price, qty: 1 });
+    }
+    return acc;
+  }, []);
 
-  alert(
-    `🛒 LFS Cart (${LFS.cart.count} item${LFS.cart.count > 1 ? 's' : ''})\n\n` +
-    `${itemLines}\n\n` +
-    `To complete your purchase, contact:\n` +
-    `LFS Treasurer: Mucha Dhlamini\n` +
-    `📞 +260 962 333 651`
-  );
+  showCartModal(aggregated, LFS.cart.count);
 }
 
 /* ─────────────────────────────────────────────────────────────
    6. CONTACT FORM
 ───────────────────────────────────────────────────────────── */
 function initContactForm() {
+  // `data-native-submit` on the form wrapper (contact-us.php) signals that this
+  // form POSTs natively to /contact (src/routes/contact.php) and must not be
+  // intercepted by JS. Do NOT remove without coordinating with the PHP route handler.
+  const contactSection = $('section#contact');
+  const hasNativeSubmit = contactSection?.querySelector('[data-native-submit]') !== null;
+  if (hasNativeSubmit) return;
+
   const form     = $('.lfs-form:not([data-native-submit])') || $('section#contact form:not([data-native-submit])');
   const submitBtn = form
     ? form.querySelector('button[type="submit"], .btn-submit, button:last-of-type')
@@ -243,7 +312,7 @@ function initContactForm() {
     submitBtn.removeAttribute('onclick');
     submitBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      handleSubmit(submitBtn, form);
+      contactHandleSubmit(submitBtn, form);
     });
   }
 }
@@ -253,7 +322,7 @@ function initContactForm() {
  * @param {HTMLElement} btn
  * @param {HTMLElement|null} form
  */
-function handleSubmit(btn, form = null) {
+async function contactHandleSubmit(btn, form = null) {
   // Simple validation
   const inputs = form
     ? $$('input, textarea, select', form).filter(el => el.required && !el.value.trim())
@@ -265,23 +334,38 @@ function handleSubmit(btn, form = null) {
     return;
   }
 
-  // Simulate send
+  if (form && typeof window.LFSInputSanitizer !== 'undefined') {
+    window.LFSInputSanitizer.sanitizeContactForm(form);
+  }
+
   const originalHTML = btn.innerHTML;
   btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Sending…';
   btn.disabled = true;
 
-  setTimeout(() => {
-    btn.innerHTML = '<i class="fas fa-check mr-2"></i> Message Sent!';
-    btn.style.background = 'var(--dark-green)';
-    showToast('Your message has been sent. We\'ll be in touch!', 'default', 4000);
+  try {
+    const res = await fetch(form.action || '/contact', {
+      method: 'POST',
+      body: new FormData(form),
+    });
 
-    setTimeout(() => {
-      btn.innerHTML = originalHTML;
-      btn.style.background = '';
-      btn.disabled = false;
-      if (form) form.reset();
-    }, 2500);
-  }, 1400);
+    if (res.ok) {
+      btn.innerHTML = '<i class="fas fa-check mr-2"></i> Message Sent!';
+      btn.style.background = 'var(--dark-green)';
+      showToast("Your message has been sent. We'll be in touch!", 'default', 4000);
+      setTimeout(() => {
+        btn.innerHTML = originalHTML;
+        btn.style.background = '';
+        btn.disabled = false;
+        form.reset();
+      }, 2500);
+    } else {
+      throw new Error('Server error');
+    }
+  } catch {
+    btn.innerHTML = originalHTML;
+    btn.disabled = false;
+    showToast('Could not send message. Please try again.', 'red', 4000);
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -361,12 +445,11 @@ function buildFlagStripes() {
    10. KEYBOARD ACCESSIBILITY
 ───────────────────────────────────────────────────────────── */
 function initA11y() {
-  // Close mobile menu on Escape
+  // Close mobile menu on Escape — use shared setMobileNavOpen to avoid state desync
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && LFS.state.navOpen) {
-      LFS.state.navOpen = false;
-      $('.lfs-nav__hamburger')?.classList.remove('open');
-      $('.lfs-nav__mobile')?.classList.remove('open');
+      setMobileNavOpen(false);
+      $('.lfs-nav__hamburger')?.focus();
     }
   });
 
@@ -431,7 +514,7 @@ function initRipple() {
 ───────────────────────────────────────────────────────────── */
 window.addToCart    = (btn)       => addToCart(btn);
 window.viewCart     = ()          => viewCart();
-window.handleSubmit = (btn, form) => handleSubmit(btn, form);
+window.handleSubmit = (btn, form) => contactHandleSubmit(btn, form);
 window.showToast    = showToast;
 
 /* ─────────────────────────────────────────────────────────────
@@ -450,9 +533,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Ripple slight delay so DOM is painted
   requestAnimationFrame(initRipple);
 
-  console.log(
-    '%c LFS · Lusaka Fitness Squad %c We\'re In This Together ',
-    'background:#1e3a2a;color:#7ecb93;font-weight:bold;padding:4px 8px;',
-    'background:#4a7c59;color:#fff;padding:4px 8px;'
-  );
+  if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+    console.log(
+      '%c LFS · Lusaka Fitness Squad %c We\'re In This Together ',
+      'background:#1e3a2a;color:#7ecb93;font-weight:bold;padding:4px 8px;',
+      'background:#4a7c59;color:#fff;padding:4px 8px;'
+    );
+  }
 });
