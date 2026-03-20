@@ -45,12 +45,11 @@ class ProductController
             'sort'  => 'latest',
             'page'  => $page,
             'limit' => 20,
-            'admin' => true,
         ];
         if ($category !== '') $opts['category'] = $category;
 
         ['products' => $products, 'total' => $total, 'pages' => $pages]
-            = $this->productService->getProducts($opts);
+            = $this->productService->getProducts($opts, ['admin' => true]);
 
         // In-memory search filter (mirrors JS implementation)
         $term = strtolower(trim($search));

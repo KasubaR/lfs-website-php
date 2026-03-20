@@ -579,7 +579,7 @@
 }
 
 .shop-empty__desc {
-  color: var(--text-muted);
+  color: var(--black);
   font-size: 0.95rem;
   max-width: 36ch;
   line-height: 1.7;
@@ -902,7 +902,7 @@
     transform: translateY(0);
   }
 
-  .shop-filters__mobile-toggle { display: inline-flex; }
+  .shop-filters__mobile-toggle { display: inline-flex; color: var(--dark-green); border-color: var(--dark-green); }
 
   .product-grid {
     grid-template-columns: repeat(2, 1fr);
