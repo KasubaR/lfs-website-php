@@ -15,55 +15,6 @@
 'use strict';
 
 /* ════════════════════════════════════════════════════════════
-   UTILS
-   ════════════════════════════════════════════════════════════ */
-
-/**
- * Show the global toast notification.
- * @param {string} msg
- * @param {'green'|'red'|'orange'} type
- */
-function showToast(msg, type = 'green') {
-  const toast = document.getElementById('cart-toast');
-  const label = document.getElementById('cart-toast-msg');
-  if (!toast || !label) return;
-
-  label.textContent = msg;
-  toast.className = 'lfs-toast show';
-  if (type === 'red')    toast.classList.add('red');
-  if (type === 'orange') toast.classList.add('orange');
-
-  clearTimeout(toast._timeout);
-  toast._timeout = setTimeout(() => {
-    toast.classList.remove('show');
-  }, 3000);
-}
-
-/**
- * Update all cart badge / count indicators on the page.
- * @param {number} count
- */
-function syncCartCount(count) {
-  // Main FAB badge and visibility (hidden when empty)
-  const fabCount = document.querySelector('.lfs-cart-fab__count');
-  if (fabCount) {
-    fabCount.textContent = count;
-    fabCount.style.display = count > 0 ? 'flex' : 'none';
-  }
-  const fab = document.querySelector('.lfs-cart-fab');
-  if (fab) {
-    if (count > 0) fab.classList.remove('lfs-cart-fab--hidden');
-    else fab.classList.add('lfs-cart-fab--hidden');
-  }
-
-  // Navbar cart link badge (if present)
-  document.querySelectorAll('[data-cart-count]').forEach((el) => {
-    el.textContent = count;
-    el.style.display = count > 0 ? '' : 'none';
-  });
-}
-
-/* ════════════════════════════════════════════════════════════
    MOBILE FILTER SIDEBAR
    ════════════════════════════════════════════════════════════ */
 
@@ -192,6 +143,13 @@ function initQuickViewModal() {
     if (e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
   });
 
+  /** HTML-escape a value before injecting into innerHTML or an attribute. */
+  function safe(str) {
+    const d = document.createElement('div');
+    d.textContent = String(str);
+    return d.innerHTML;
+  }
+
   /**
    * Build quick-view HTML from product card data attributes.
    * For a production site, replace this with a fetch to a /shop/product/:slug?partial=1 endpoint.
@@ -203,7 +161,8 @@ function initQuickViewModal() {
     const priceText = card.querySelector('.product-card__price--current')?.textContent.trim() || '';
     const imgSrc    = card.querySelector('.product-card__img')?.src || '/images/products/placeholder.webp';
     const imgAlt    = card.querySelector('.product-card__img')?.alt || name;
-    const sizesRaw  = card.querySelector('.js-quick-add')?.dataset.sizes;
+    const sizesRaw   = card.querySelector('.js-quick-add')?.dataset.sizes;
+    const totalStock = parseInt(card.dataset.totalStock, 10) || 20;
 
     let sizes = [];
     try { sizes = sizesRaw ? JSON.parse(sizesRaw) : []; } catch (_) {}
@@ -213,21 +172,21 @@ function initQuickViewModal() {
           <button
             type="button"
             class="quick-view__size-btn ${i === 0 ? 'is-selected' : ''}"
-            data-size="${s}"
-            aria-label="Select size ${s}"
+            data-size="${safe(s)}"
+            aria-label="Select size ${safe(s)}"
             aria-pressed="${i === 0}"
-          >${s}</button>
+          >${safe(s)}</button>
         `).join('')
       : '<p style="font-size:0.85rem;color:#888;">One size</p>';
 
     content.innerHTML = `
       <div class="quick-view-grid">
         <div>
-          <img src="${imgSrc}" alt="${imgAlt}" class="quick-view__img" width="480" height="480">
+          <img src="${safe(imgSrc)}" alt="${safe(imgAlt)}" class="quick-view__img" width="480" height="480">
         </div>
         <div>
-          <h2 class="quick-view__name">${name}</h2>
-          <p class="quick-view__price">${priceText}</p>
+          <h2 class="quick-view__name">${safe(name)}</h2>
+          <p class="quick-view__price">${safe(priceText)}</p>
 
           <div class="quick-view__size-label">Select Size</div>
           <div class="quick-view__sizes" id="qv-sizes" role="group" aria-label="Select size">
@@ -237,7 +196,7 @@ function initQuickViewModal() {
           <div class="quick-view__size-label" style="margin-top:0.25rem;">Quantity</div>
           <div class="quick-view__qty" aria-label="Quantity selector">
             <button type="button" class="quick-view__qty-btn" id="qv-minus" aria-label="Decrease quantity">−</button>
-            <input type="number" class="quick-view__qty-input" id="qv-qty" value="1" min="1" max="20" aria-label="Quantity">
+            <input type="number" class="quick-view__qty-input" id="qv-qty" value="1" min="1" max="${totalStock}" aria-label="Quantity">
             <button type="button" class="quick-view__qty-btn" id="qv-plus" aria-label="Increase quantity">+</button>
           </div>
 
@@ -245,15 +204,15 @@ function initQuickViewModal() {
             type="button"
             class="btn btn-primary quick-view__add-btn"
             id="qv-add-cart"
-            data-product-id="${productId}"
-            data-slug="${slug}"
+            data-product-id="${safe(productId)}"
+            data-slug="${safe(slug)}"
             aria-label="Add to cart"
           >
             <i class="fas fa-shopping-bag" aria-hidden="true"></i>
             Add to Cart
           </button>
 
-          <a href="/shop/product/${slug}" class="btn btn-outline mt-3" style="width:100%;justify-content:center;margin-top:0.75rem;">
+          <a href="/shop/product/${safe(slug)}" class="btn btn-outline mt-3" style="width:100%;justify-content:center;margin-top:0.75rem;">
             View Full Details
           </a>
         </div>
@@ -280,7 +239,7 @@ function initQuickViewModal() {
     });
     content.querySelector('#qv-plus')?.addEventListener('click', () => {
       const v = parseInt(qtyInput.value, 10);
-      if (v < 20) qtyInput.value = v + 1;
+      if (v < totalStock) qtyInput.value = v + 1;
     });
 
     // Add to cart from modal
@@ -293,7 +252,7 @@ function initQuickViewModal() {
         return;
       }
 
-      addToCart(productId, selectedSize, parseInt(qtyInput.value, 10) || 1);
+      addToCartById(productId, selectedSize, parseInt(qtyInput.value, 10) || 1);
       closeModal();
     });
   }
@@ -346,49 +305,10 @@ function initQuickAdd() {
     // Single or no size — add directly
     const productId = btn.dataset.productId;
     const size      = sizes[0] || 'One Size';
-    addToCart(productId, size, 1);
+    addToCartById(productId, size, 1);
   });
 }
 
-/* ════════════════════════════════════════════════════════════
-   ADD TO CART (AJAX)
-   ════════════════════════════════════════════════════════════ */
-
-function getCsrfToken() {
-  const match = document.cookie.match(/(?:^|;\s*)lfs_csrf=([^;]+)/);
-  return match ? decodeURIComponent(match[1]) : '';
-}
-
-async function addToCart(productId, size, qty = 1) {
-  try {
-    const headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'X-Requested-With': 'XMLHttpRequest',
-    };
-    const csrf = getCsrfToken();
-    if (csrf) headers['X-CSRF-Token'] = csrf;
-
-    const res = await fetch('/shop/cart/add', {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ productId, size, qty }),
-    });
-
-    const data = await res.json();
-
-    if (data.ok) {
-      showToast(`✓ Added to cart — ${data.subtotal}`, 'green');
-      syncCartCount(data.itemCount);
-    } else {
-      showToast(data.message || 'Could not add to cart.', 'red');
-    }
-
-  } catch (err) {
-    console.error('[LFS Shop] addToCart error:', err);
-    showToast('Network error. Please try again.', 'red');
-  }
-}
 
 /* ════════════════════════════════════════════════════════════
    SCROLL-REVEAL (reuse main.js pattern if not already running)

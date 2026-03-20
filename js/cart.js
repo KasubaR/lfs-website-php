@@ -7,10 +7,32 @@
 'use strict';
 
 /* ─────────────────────────────────────────────────────────────
+   TOAST  (global — shared by shop.js, productDetails.js, etc.)
+───────────────────────────────────────────────────────────── */
+
+/**
+ * Show the global toast notification.
+ * @param {string} msg
+ * @param {'green'|'red'|'orange'|'default'} [type='green']
+ * @param {number} [duration=3000]
+ */
+window.showToast = function showToast(msg, type = 'green', duration = 3000) {
+  const toast = document.getElementById('cart-toast');
+  const label = document.getElementById('cart-toast-msg');
+  if (!toast || !label) return;
+
+  label.textContent = msg;
+  toast.className   = `lfs-toast show${type !== 'green' && type !== 'default' ? ' ' + type : ''}`;
+
+  clearTimeout(toast._timeout);
+  toast._timeout = setTimeout(() => toast.classList.remove('show'), duration);
+};
+
+/* ─────────────────────────────────────────────────────────────
    HELPERS
 ───────────────────────────────────────────────────────────── */
 
-/** Update the FAB badge count and visibility (hidden when empty). */
+/** Update all cart badge/count indicators on the page. */
 function updateCartBadge(count) {
   const badge = document.querySelector('.lfs-cart-fab__count');
   if (badge) {
@@ -27,6 +49,12 @@ function updateCartBadge(count) {
       fab.classList.add('lfs-cart-fab--hidden');
     }
   }
+
+  // Navbar / inline count elements
+  document.querySelectorAll('[data-cart-count]').forEach((el) => {
+    el.textContent = count;
+    el.style.display = count > 0 ? '' : 'none';
+  });
 }
 
 /** Read lfs_csrf cookie value for CSRF header. */
@@ -52,6 +80,76 @@ async function cartFetch(url, body) {
     return null;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   ADD TO CART BY ID
+   Shared by shop.js (quick-view) and productDetails.js.
+   Centralised here so neither file re-declares a global.
+
+   @param {string}  productId
+   @param {string}  size
+   @param {number}  qty
+   @param {boolean} [redirect=false]  navigate to /shop/cart on success
+   @returns {Promise<boolean>}
+───────────────────────────────────────────────────────────── */
+window.addToCartById = async function addToCartById(productId, size, qty, redirect = false) {
+  const addBtn = document.getElementById('pd-add-cart');
+  if (addBtn) addBtn.classList.add('is-loading');
+
+  try {
+    const headers = {
+      'Content-Type':     'application/json',
+      'Accept':           'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+    };
+    const csrf = getCsrfToken();
+    if (csrf) headers['X-CSRF-Token'] = csrf;
+
+    const res = await fetch('/shop/cart/add', {
+      method:      'POST',
+      credentials: 'same-origin',
+      headers,
+      body: JSON.stringify({ productId, size, qty }),
+    });
+
+    const contentType = res.headers.get('Content-Type') || '';
+    const text        = await res.text();
+    let data = null;
+    if (contentType.includes('application/json') && text) {
+      try { data = JSON.parse(text); } catch (_) {}
+    }
+
+    if (data && typeof data.ok !== 'undefined') {
+      if (data.ok) {
+        updateCartBadge(data.itemCount);
+        if (redirect) { window.location.href = '/shop/cart'; return true; }
+        const name = document.querySelector('.pd-info__name')?.textContent?.trim() || 'Item';
+        if (window.showToast) window.showToast(`✓ ${name} added — ${data.subtotal}`, 'green');
+        return true;
+      }
+      if (window.showToast) window.showToast(data.message || 'Could not add to cart.', 'red');
+      return false;
+    }
+
+    if (!res.ok) {
+      const msg = res.status === 403
+        ? 'Session expired. Please refresh and try again.'
+        : 'Something went wrong. Please try again.';
+      if (window.showToast) window.showToast(msg, 'red');
+      return false;
+    }
+
+    if (window.showToast) window.showToast('Unexpected response. Please try again.', 'red');
+    return false;
+
+  } catch (err) {
+    console.error('[LFS] addToCartById error:', err);
+    if (window.showToast) window.showToast('Network error. Please try again.', 'red');
+    return false;
+  } finally {
+    if (addBtn) addBtn.classList.remove('is-loading');
+  }
+};
 
 /* ─────────────────────────────────────────────────────────────
    OVERRIDE: viewCart — navigate to cart page instead of alert

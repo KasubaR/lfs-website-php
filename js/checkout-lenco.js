@@ -114,7 +114,7 @@
     showOverlay('Sending payment request…');
 
     // ── POST to server ──
-    const csrfToken = getCsrf();
+    const csrfToken = getCsrfToken();
     let response;
     try {
       const res = await fetch(PLACE_ORDER_URL, {
@@ -155,8 +155,8 @@
       expiresAt    : response.expiresAt,
     };
 
+    placeBtn.disabled = true; // prevent double-submit during transition
     setButtonLoading(placeBtn, false);
-    placeBtn.disabled = true; // prevent double-submit
 
     showPaymentInstructions(currentOrder.instructions, provider);
     startPolling(currentTxId);
@@ -214,6 +214,16 @@
     pollCount = 0;
     clearInterval(pollTimer);
     pollTimer = setInterval(() => checkStatus(txId), POLL_INTERVAL_MS);
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        clearInterval(pollTimer);
+      } else if (currentTxId) {
+        // Resume polling immediately when tab becomes visible again
+        checkStatus(currentTxId);
+        pollTimer = setInterval(() => checkStatus(currentTxId), POLL_INTERVAL_MS);
+      }
+    });
   }
 
   async function checkStatus(txId) {
@@ -337,11 +347,6 @@
 
   function hideOverlay() {
     document.querySelector('.checkout-loading')?.classList.remove('is-active');
-  }
-
-  function getCsrf() {
-    const match = document.cookie.match(/(?:^|;\s*)lfs_csrf=([^;]+)/);
-    return match ? decodeURIComponent(match[1]) : '';
   }
 
 })();

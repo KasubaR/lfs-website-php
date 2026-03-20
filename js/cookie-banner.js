@@ -60,11 +60,11 @@
 
   /* ════════════════════════════════════════════════════════════
      BANNER DOM BUILDER
-     Injects the banner HTML if it doesn't already exist in EJS.
-     If you include the EJS partial, this function is skipped.
+     Injects the banner HTML if it doesn't already exist in the DOM.
+     If you include the PHP partial, this function is skipped.
      ════════════════════════════════════════════════════════════ */
   function buildBanner() {
-    if (document.getElementById('lfs-cookie-banner')) return; // already rendered by EJS
+    if (document.getElementById('lfs-cookie-banner')) return; // already rendered by PHP partial
 
     const banner = document.createElement('div');
     banner.id = 'lfs-cookie-banner';
@@ -153,6 +153,8 @@
         left: 50%;
         transform: translateX(-50%);
         width: min(92vw, 720px);
+        max-width: 100%;
+        box-sizing: border-box;
         background: #141414;
         border: 1px solid rgba(255,255,255,0.08);
         border-radius: 0.5rem;
@@ -160,14 +162,21 @@
         z-index: 9999;
         font-family: 'DM Sans', sans-serif;
         color: #f5f2ec;
-        max-height: calc(100vh - 3rem);
+        max-height: calc(100vh - 2rem);
+        max-height: min(calc(100vh - 2rem), calc(100dvh - 2rem));
         overflow-y: auto;
         overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
         animation: lfs-slide-up 0.4s ease forwards;
       }
+      #lfs-cookie-banner *, #lfs-cookie-banner *::before, #lfs-cookie-banner *::after { box-sizing: border-box; }
       @keyframes lfs-slide-up {
         from { opacity: 0; transform: translateX(-50%) translateY(20px); }
         to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+      }
+      @keyframes lfs-slide-up-mobile {
+        from { opacity: 0; transform: translateY(20px); }
+        to   { opacity: 1; transform: translateY(0); }
       }
       .lfs-cookie-flag-bar {
         height: 3px;
@@ -175,12 +184,12 @@
       }
       .lfs-cookie-body {
         display: flex;
-        align-items: center;
-        gap: 1.5rem;
-        padding: 1.25rem 1.5rem;
+        align-items: flex-start;
+        gap: 1.25rem;
+        padding: 1.25rem clamp(1rem, 4vw, 1.5rem);
         flex-wrap: wrap;
       }
-      .lfs-cookie-text { flex: 1; min-width: 0; }
+      .lfs-cookie-text { flex: 1 1 220px; min-width: 0; }
       .lfs-cookie-title {
         font-size: 1rem;
         font-weight: 700;
@@ -200,10 +209,16 @@
       .lfs-cookie-actions {
         display: flex;
         gap: 0.6rem;
-        flex-shrink: 0;
+        flex: 1 1 200px;
+        min-width: 0;
         flex-wrap: wrap;
+        align-items: stretch;
+        justify-content: flex-end;
       }
       .lfs-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         padding: 0.55rem 1.1rem;
         border-radius: 0.25rem;
         font-size: 0.82rem;
@@ -212,6 +227,8 @@
         border: none;
         transition: background 0.2s, color 0.2s;
         white-space: nowrap;
+        flex: 0 1 auto;
+        min-width: 0;
       }
       .lfs-btn-green   { background: #4a7c59; color: #fff; }
       .lfs-btn-green:hover { background: #6aad7e; }
@@ -220,22 +237,34 @@
       .lfs-btn-ghost   { background: transparent; color: rgba(245,242,236,0.55); font-weight: 400; }
       .lfs-btn-ghost:hover { color: #e07b39; }
 
-      /* Preferences panel */
-      .lfs-cookie-prefs { padding: 1.25rem 1.5rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.08); }
+      .lfs-cookie-prefs { padding: 1.25rem clamp(1rem, 4vw, 1.5rem) 1.5rem; border-top: 1px solid rgba(255,255,255,0.08); }
       .lfs-prefs-title  { font-size: 0.85rem; font-weight: 700; margin: 0 0 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: #7ecb93; }
       .lfs-prefs-list   { list-style: none; padding: 0; margin: 0 0 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
-      .lfs-pref-item    { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.75rem; background: rgba(255,255,255,0.04); border-radius: 0.25rem; }
+      .lfs-pref-item    { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 1rem; row-gap: 0.35rem; padding: 0.6rem 0.75rem; background: rgba(255,255,255,0.04); border-radius: 0.25rem; }
+      .lfs-pref-item span { min-width: 0; }
       .lfs-pref-item span strong { display: block; font-size: 0.85rem; }
-      .lfs-pref-item span small  { font-size: 0.75rem; color: rgba(245,242,236,0.55); }
-      .lfs-pref-item input[type="checkbox"] { width: 1.1rem; height: 1.1rem; cursor: pointer; accent-color: #4a7c59; }
+      .lfs-pref-item span small  { display: block; font-size: 0.75rem; color: rgba(245,242,236,0.55); }
+      .lfs-pref-item input[type="checkbox"] { width: 1.1rem; height: 1.1rem; flex-shrink: 0; cursor: pointer; accent-color: #4a7c59; }
       .lfs-pref-item input:disabled { cursor: not-allowed; opacity: 0.5; }
-      .lfs-prefs-actions { display: flex; gap: 0.6rem; }
+      .lfs-prefs-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
 
-      @media (max-width: 600px) {
-        #lfs-cookie-banner { bottom: 0; left: 0; right: 0; transform: none; width: 100%; border-radius: 0.5rem 0.5rem 0 0; }
-        .lfs-cookie-body { flex-direction: column; }
-        .lfs-cookie-actions { width: 100%; }
-        .lfs-btn { flex: 1; text-align: center; }
+      @media (max-width: 768px) {
+        .lfs-cookie-body { flex-direction: column; align-items: stretch; }
+        .lfs-cookie-actions { flex: 1 1 auto; width: 100%; justify-content: stretch; }
+        .lfs-btn { white-space: normal; text-align: center; flex: 1 1 calc(50% - 0.35rem); min-width: min(100%, 8.5rem); }
+        .lfs-cookie-actions .lfs-btn-ghost { flex: 1 1 100%; }
+      }
+      @media (max-width: 560px) {
+        #lfs-cookie-banner {
+          bottom: 0; left: 0; right: 0; transform: none; width: 100%; max-width: none;
+          border-radius: 0.75rem 0.75rem 0 0; padding-bottom: env(safe-area-inset-bottom, 0px);
+          max-height: 90vh;
+          max-height: min(90vh, 90dvh); animation-name: lfs-slide-up-mobile;
+        }
+        .lfs-cookie-actions { flex-direction: column; }
+        .lfs-btn { flex: none; width: 100%; min-width: 0; }
+        .lfs-prefs-actions { flex-direction: column; }
+        .lfs-prefs-actions .lfs-btn { width: 100%; justify-content: center; }
       }
     `;
     document.head.appendChild(style);
@@ -243,15 +272,22 @@
 
   /* ════════════════════════════════════════════════════════════
      HIDE BANNER (animate out)
+     Returns a cancel function — call it within 350 ms to abort
+     the removal and restore the banner (used on request failure).
      ════════════════════════════════════════════════════════════ */
   function hideBanner() {
     const banner = document.getElementById('lfs-cookie-banner');
-    if (!banner) return;
-    const isMobile = window.innerWidth <= 600;
+    if (!banner) return () => {};
+    const isMobile = window.innerWidth <= 560;
     banner.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
     banner.style.opacity    = '0';
     banner.style.transform  = isMobile ? 'translateY(20px)' : 'translateX(-50%) translateY(20px)';
-    setTimeout(() => banner.remove(), 350);
+    const timer = setTimeout(() => banner.remove(), 350);
+    return function cancelHide() {
+      clearTimeout(timer);
+      banner.style.opacity   = '';
+      banner.style.transform = '';
+    };
   }
 
   /* ════════════════════════════════════════════════════════════
@@ -267,20 +303,30 @@
     /* Accept All ─────────────────────────────────────────── */
     banner.querySelector('#lfs-cookie-accept-all')?.addEventListener('click', async (e) => {
       e.preventDefault();
-      const ok = await postConsent({ accept: 'all' });
+      const btn      = e.currentTarget;
+      btn.disabled   = true;
+      const cancelHide = hideBanner();
+      const ok       = await postConsent({ accept: 'all' });
       if (ok) {
-        hideBanner();
         dispatchConsentEvent({ necessary: true, analytics: true, preferences: true, marketing: true });
+      } else {
+        cancelHide();
+        btn.disabled = false;
       }
     });
 
     /* Necessary Only ─────────────────────────────────────── */
     banner.querySelector('#lfs-cookie-necessary')?.addEventListener('click', async (e) => {
       e.preventDefault();
-      const ok = await postConsent({ accept: 'necessary' });
+      const btn        = e.currentTarget;
+      btn.disabled     = true;
+      const cancelHide = hideBanner();
+      const ok         = await postConsent({ accept: 'necessary' });
       if (ok) {
-        hideBanner();
         dispatchConsentEvent({ necessary: true, analytics: false, preferences: false, marketing: false });
+      } else {
+        cancelHide();
+        btn.disabled = false;
       }
     });
 
@@ -301,11 +347,14 @@
     /* Save Preferences ───────────────────────────────────── */
     banner.querySelector('#lfs-cookie-save-prefs')?.addEventListener('click', async (e) => {
       e.preventDefault();
+      const btn         = e.currentTarget;
+      btn.disabled      = true;
       const analytics   = document.getElementById('pref-analytics')?.checked   || false;
       const preferences = document.getElementById('pref-preferences')?.checked || false;
       const marketing   = document.getElementById('pref-marketing')?.checked   || false;
 
-      const ok = await postConsent({
+      const cancelHide = hideBanner();
+      const ok         = await postConsent({
         necessary:   true,
         analytics:   String(analytics),
         preferences: String(preferences),
@@ -313,12 +362,14 @@
       });
 
       if (ok) {
-        hideBanner();
         dispatchConsentEvent({ necessary: true, analytics, preferences, marketing });
+      } else {
+        cancelHide();
+        btn.disabled = false;
       }
     });
 
-    /* Prevent form submit when JS handles consent (EJS-rendered forms) */
+    /* Prevent form submit when JS handles consent (PHP-rendered forms) */
     banner.querySelectorAll('form[action*="/cookies/consent"]').forEach((form) => {
       form.addEventListener('submit', (e) => { e.preventDefault(); });
     });
@@ -340,11 +391,16 @@
      ════════════════════════════════════════════════════════════ */
   async function withdraw() {
     try {
-      await fetch(WITHDRAW_ENDPOINT, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      const res = await fetch(WITHDRAW_ENDPOINT, {
+        method:      'POST',
+        credentials: 'same-origin',
+        headers:     { 'Content-Type': 'application/x-www-form-urlencoded' },
       });
-      window.location.reload();
+      if (res.ok) {
+        window.location.reload();
+      } else {
+        console.error('[LFS Cookie] Withdraw failed with status:', res.status);
+      }
     } catch (err) {
       console.error('[LFS Cookie] Withdraw failed:', err);
     }
@@ -361,7 +417,7 @@
 
   /* ════════════════════════════════════════════════════════════
      INIT
-     Only build/inject when banner is not already server-rendered (EJS).
+     Only build/inject when banner is not already server-rendered (PHP partial).
      ════════════════════════════════════════════════════════════ */
   function init() {
     if (hasConsent()) return; // banner already dismissed

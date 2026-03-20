@@ -22,7 +22,7 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/../../src/controllers/CookieController.php';
+require_once APP_ROOT . '/controllers/CookieController.php';
 
 $controller = new CookieController();
 $seg0       = $segments[0] ?? '';

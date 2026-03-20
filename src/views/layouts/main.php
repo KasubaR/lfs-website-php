@@ -33,7 +33,7 @@
   <link rel="stylesheet" href="<?= htmlspecialchars(lfs_public_url('/css/main.css'), ENT_QUOTES, 'UTF-8') ?>">
   <link rel="stylesheet" href="<?= htmlspecialchars(lfs_public_url('/css/cookie-banner.css'), ENT_QUOTES, 'UTF-8') ?>">
 
-  <!-- Page-specific styles (optional) -->
+  <!-- Page-specific styles (optional — trusted controller output only, never from user input) -->
   <?= ($styles ?? '') . ($extraStyles ?? '') ?>
 </head>
 
@@ -67,7 +67,7 @@
   <script src="<?= htmlspecialchars(lfs_public_url('/js/main.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
   <script src="<?= htmlspecialchars(lfs_public_url('/js/cart.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 
-  <!-- Page-specific scripts (optional) -->
+  <!-- Page-specific scripts (optional — trusted controller output only, never from user input) -->
   <?= ($scripts ?? '') . ($extraScripts ?? '') ?>
 
 </body>

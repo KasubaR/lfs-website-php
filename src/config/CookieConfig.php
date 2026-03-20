@@ -93,11 +93,14 @@ class CookieConfig
     {
         return match ($type) {
 
-            // 7-day rolling session; httpOnly so JS cannot read it
+            // 7-day session from login (hard expiry); httpOnly so JS cannot read it
+            // Strict: auth cookie is never sent on cross-site requests, including
+            // top-level navigations (e.g. payment-provider redirects). If an OAuth
+            // or third-party redirect flow is added later, revert to 'Lax'.
             'auth' => array_merge(self::base(), [
                 'expires'  => time() + self::DURATION['WEEK'],
                 'httponly' => true,
-                'samesite' => 'Lax',
+                'samesite' => 'Strict',
             ]),
 
             // Consent banner decision — front-end JS must read this to hide the banner
@@ -121,7 +124,7 @@ class CookieConfig
                 'samesite' => 'Strict',   // stricter: token must not leak cross-site
             ]),
 
-            default => self::base(),
+            default => throw new \InvalidArgumentException("[LFS] Unknown cookie type: '$type'"),
         };
     }
 

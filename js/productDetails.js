@@ -18,54 +18,14 @@
 
 'use strict';
 
-/* ════════════════════════════════════════════════════════════
-   CART BADGE SYNC
-   ════════════════════════════════════════════════════════════ */
-
-function syncCartCount(count) {
-  const fabCount = document.querySelector('.lfs-cart-fab__count');
-  if (fabCount) {
-    fabCount.textContent = count;
-    fabCount.style.display = count > 0 ? 'flex' : 'none';
-  }
-  const fab = document.querySelector('.lfs-cart-fab');
-  if (fab) {
-    if (count > 0) fab.classList.remove('lfs-cart-fab--hidden');
-    else fab.classList.add('lfs-cart-fab--hidden');
-  }
-  document.querySelectorAll('[data-cart-count]').forEach((el) => {
-    el.textContent = count;
-    el.style.display = count > 0 ? '' : 'none';
-  });
-}
-
-/* ════════════════════════════════════════════════════════════
-   TOAST
-   ════════════════════════════════════════════════════════════ */
-
-let _toastTimeout = null;
-
-/**
- * Show the bottom-right toast.
- * @param {string} msg
- * @param {'green'|'red'|'orange'} type
- */
-function showToast(msg, type = 'green') {
-  const toast    = document.getElementById('cart-toast');
-  const msgEl    = document.getElementById('cart-toast-msg');
-  if (!toast || !msgEl) return;
-
-  msgEl.textContent = msg;
-  toast.className   = `lfs-toast show${type !== 'green' ? ' ' + type : ''}`;
-
-  clearTimeout(_toastTimeout);
-  _toastTimeout = setTimeout(() => toast.classList.remove('show'), 4500);
-}
 
 function initToastDismiss() {
   document.getElementById('pd-toast-dismiss')?.addEventListener('click', () => {
-    document.getElementById('cart-toast')?.classList.remove('show');
-    clearTimeout(_toastTimeout);
+    const toast = document.getElementById('cart-toast');
+    if (toast) {
+      clearTimeout(toast._timeout);
+      toast.classList.remove('show');
+    }
   });
 }
 
@@ -222,83 +182,6 @@ function initQtySelector() {
   updateQtyButtons();
 }
 
-/* ════════════════════════════════════════════════════════════
-   ADD TO CART
-   ════════════════════════════════════════════════════════════ */
-
-/**
- * POST to /shop/cart/add and handle response.
- * @param {string}  productId
- * @param {string}  size
- * @param {number}  qty
- * @param {boolean} [redirect=false]  if true, navigates to /shop/cart after success
- * @returns {Promise<boolean>}  true on success
- */
-async function addToCart(productId, size, qty, redirect = false) {
-  const addBtn = document.getElementById('pd-add-cart');
-
-  // Loading state
-  if (addBtn) addBtn.classList.add('is-loading');
-
-  try {
-    const csrfToken = document.cookie.replace(/\s*;\s*/g, ';').split(';').find(c => c.startsWith('lfs_csrf='))?.split('=')[1] || '';
-    const headers = {
-      'Content-Type':     'application/json',
-      'Accept':           'application/json',
-      'X-Requested-With': 'XMLHttpRequest',
-    };
-    if (csrfToken) headers['X-CSRF-Token'] = csrfToken;
-
-    const res = await fetch('/shop/cart/add', {
-      method:  'POST',
-      headers,
-      body: JSON.stringify({ productId, size, qty }),
-    });
-
-    const contentType = res.headers.get('Content-Type') || '';
-    const text = await res.text();
-    let data = null;
-    if (contentType.includes('application/json') && text) {
-      try {
-        data = JSON.parse(text);
-      } catch (_) {
-        data = null;
-      }
-    }
-
-    if (data && typeof data.ok !== 'undefined') {
-      if (data.ok) {
-        syncCartCount(data.itemCount);
-
-        if (redirect) {
-          window.location.href = '/shop/cart';
-          return true;
-        }
-
-        const name = document.querySelector('.pd-info__name')?.textContent?.trim() || 'Item';
-        showToast(`✓ ${name} added — ${data.subtotal}`, 'green');
-        return true;
-      } else {
-        showToast(data.message || 'Could not add to cart.', 'red');
-        return false;
-      }
-    }
-
-    if (!res.ok) {
-      showToast(res.status === 403 ? 'Session expired. Please refresh and try again.' : 'Something went wrong. Please try again.', 'red');
-      return false;
-    }
-    showToast('Unexpected response. Please try again.', 'red');
-    return false;
-
-  } catch (err) {
-    console.error('[LFS] addToCart error:', err);
-    showToast('Network error. Please try again.', 'red');
-    return false;
-  } finally {
-    if (addBtn) addBtn.classList.remove('is-loading');
-  }
-}
 
 /* ════════════════════════════════════════════════════════════
    PURCHASE FORM SUBMISSION
@@ -347,7 +230,7 @@ function initPurchaseForm() {
     const size = sizeInput?.value || 'One Size';
     const qty  = parseInt(qtyInput?.value, 10) || 1;
 
-    await addToCart(productId, size, qty, false);
+    await addToCartById(productId, size, qty, false);
   });
 
   // Buy Now
@@ -357,7 +240,7 @@ function initPurchaseForm() {
     const size = sizeInput?.value || 'One Size';
     const qty  = parseInt(qtyInput?.value, 10) || 1;
 
-    await addToCart(productId, size, qty, true);
+    await addToCartById(productId, size, qty, true);
   });
 }
 
@@ -436,6 +319,16 @@ function initSizeGuideModal() {
    ════════════════════════════════════════════════════════════ */
 
 function initScrollReveal() {
+  const items = document.querySelectorAll('[data-reveal]');
+  if (!items.length) return;
+
+  if (!document.getElementById('lfs-reveal-style')) {
+    const style = document.createElement('style');
+    style.id = 'lfs-reveal-style';
+    style.textContent = '[data-reveal].revealed { opacity: 1 !important; transform: translateY(0) !important; }';
+    document.head.appendChild(style);
+  }
+
   if (!('IntersectionObserver' in window)) return;
 
   const observer = new IntersectionObserver(
@@ -450,21 +343,13 @@ function initScrollReveal() {
     { threshold: 0.08, rootMargin: '0px 0px -40px 0px' }
   );
 
-  document.querySelectorAll('[data-reveal]').forEach((el, i) => {
+  items.forEach((el, i) => {
     el.style.opacity  = '0';
     el.style.transform = 'translateY(20px)';
     el.style.transition = `opacity 0.55s ease ${i * 0.08}s, transform 0.55s ease ${i * 0.08}s`;
     observer.observe(el);
   });
 }
-
-/* revealed class trigger */
-document.addEventListener('DOMContentLoaded', () => {
-  // Inject revealed style dynamically — avoids needing a separate CSS rule file
-  const style = document.createElement('style');
-  style.textContent = '[data-reveal].revealed { opacity: 1 !important; transform: translateY(0) !important; }';
-  document.head.appendChild(style);
-});
 
 /* ════════════════════════════════════════════════════════════
    IMAGE ZOOM (lightbox-lite)

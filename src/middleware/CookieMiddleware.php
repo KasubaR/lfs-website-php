@@ -20,11 +20,15 @@ require_once __DIR__ . '/../config/CookieConfig.php';
 
 class CookieMiddleware
 {
+    /** Per-request cache — populated on first call to attachLocals(). */
+    private static ?array $cachedLocals = null;
+
     /* ════════════════════════════════════════════════════════════
        ATTACH LOCALS
        Reads consent + preferences cookies and writes them into
        the $viewLocals array that controllers pass to views.
-       Call once per request, before any ob_start() render.
+       Result is cached for the lifetime of the request so that
+       requireConsent() calls do not re-parse the same cookies.
        ════════════════════════════════════════════════════════════ */
 
     /**
@@ -35,6 +39,8 @@ class CookieMiddleware
      */
     public static function attachLocals(): array
     {
+        if (self::$cachedLocals !== null) return self::$cachedLocals;
+
         /* ── Consent ─────────────────────────────────────────── */
         $consent      = CookieConfig::DEFAULT_CONSENT;
         $consentGiven = false;
@@ -56,12 +62,14 @@ class CookieMiddleware
             if (is_array($parsed)) $prefs = $parsed;
         }
 
-        return [
+        self::$cachedLocals = [
             'consent'      => $consent,
             'consentGiven' => $consentGiven,
             'showBanner'   => !$consentGiven,   // PHP views: <?php if ($showBanner): ?>
             'prefs'        => $prefs,
         ];
+
+        return self::$cachedLocals;
     }
 
     /* ════════════════════════════════════════════════════════════
@@ -171,7 +179,12 @@ class CookieMiddleware
 
     public static function clearAllCookies(): void
     {
-        $expired = ['expires' => 1, 'path' => '/'];
+        $expired = [
+            'expires'  => 1,
+            'path'     => '/',
+            'secure'   => CookieConfig::isProd(),
+            'samesite' => 'Lax',
+        ];
         foreach (CookieConfig::NAMES as $name) {
             setcookie($name, '', $expired);
         }

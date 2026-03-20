@@ -171,6 +171,7 @@ class AuthMiddleware
             $title   = 'Forbidden';
             $status  = 403;
             $message = "You don't have permission to access this page.";
+            while (ob_get_level() > 0) ob_end_clean();
             ob_start();
             require __DIR__ . '/../../src/views/pages/error.php';
             $content = ob_get_clean();

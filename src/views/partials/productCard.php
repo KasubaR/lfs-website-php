@@ -49,6 +49,7 @@ $categoryLabel = str_replace('-', ' ', $product['category'] ?? '');
   data-product-slug="<?= htmlspecialchars($product['slug'] ?? '') ?>"
   data-category="<?= htmlspecialchars($product['category'] ?? '') ?>"
   data-gender="<?= htmlspecialchars($product['gender'] ?? '') ?>"
+  data-total-stock="<?= (int)($product['totalStock'] ?? 0) ?>"
   itemscope
   itemtype="https://schema.org/Product"
   aria-label="<?= htmlspecialchars($product['name'] ?? '') ?>"

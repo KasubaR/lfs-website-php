@@ -142,13 +142,11 @@ class CsrfMiddleware
     /** Send a 403 response and halt execution. */
     private static function abort(): void
     {
-        $accept      = $_SERVER['HTTP_ACCEPT']           ?? '';
-        $xRequested  = $_SERVER['HTTP_X_REQUESTED_WITH'] ?? '';
-        $contentType = $_SERVER['CONTENT_TYPE']          ?? '';
+        $accept     = $_SERVER['HTTP_ACCEPT']           ?? '';
+        $xRequested = $_SERVER['HTTP_X_REQUESTED_WITH'] ?? '';
 
         $isJson = str_contains($accept, 'application/json')
-               || strtolower($xRequested) === 'xmlhttprequest'
-               || str_contains($contentType, 'multipart');
+               || strtolower($xRequested) === 'xmlhttprequest';
 
         http_response_code(403);
 
@@ -162,6 +160,7 @@ class CsrfMiddleware
         $status  = 403;
         $message = 'Invalid or missing CSRF token. Please go back and try again.';
 
+        while (ob_get_level() > 0) ob_end_clean();
         ob_start();
         require __DIR__ . '/../../src/views/pages/error.php';
         $content = ob_get_clean();

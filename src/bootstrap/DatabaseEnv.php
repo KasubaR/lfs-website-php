@@ -1,7 +1,7 @@
 <?php
 /**
- * Load database credentials from a .env file into the process environment.
- * Only variables whose names match DB_* are applied (nothing else from the file is read).
+ * Load app configuration from a .env file into the process environment.
+ * Only variables whose names match DB_*, ADMIN_*, or JWT_* are applied.
  * Callers pass the full path (e.g. project root index.php loads __DIR__ . '/.env').
  *
  * @see Database.php — reads DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASS, DB_CHARSET
@@ -11,7 +11,7 @@ declare(strict_types=1);
 final class DatabaseEnv
 {
     /** Keys are normalized with strtoupper() before matching (so db_host in .env becomes DB_HOST). */
-    private const KEY_PATTERN = '/^DB_[A-Z][A-Z0-9_]*$/';
+    private const KEY_PATTERN = '/^(DB|ADMIN|JWT)_[A-Z][A-Z0-9_]*$/';
 
     /**
      * Parse $path and set matching DB_* keys via putenv() and $_ENV.

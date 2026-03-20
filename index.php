@@ -8,7 +8,7 @@ DatabaseEnv::load($lfsRoot . '/.env');
 
 // Non-database settings (override via real server env as needed)
 putenv('APP_ENV=development');
-putenv('ADMIN_PASSWORD_HASH=$2y$12$Rlf3PkcaJd3hMctBA.FZn.tECeMJiQk25DYBnIBZIi1OlpW4o26y.'); // hash of password "password"
+// ADMIN_PASSWORD_HASH must be set in .env — never commit a credential to source control
 
 // Lenco payment API — get keys from https://dashboard.lenco.co (or Lenco docs)
 // Set these for checkout/payments to work; leave empty to disable Lenco (shop will still load).
