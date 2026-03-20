@@ -124,11 +124,13 @@ $yearNum   = $eDate ? $eDate->format('Y')          : '';
             <i class="fas fa-camera" aria-hidden="true"></i> View Photos
           </a>
           <?php elseif ($isOpen): ?>
-          <a href="<?= $isMembersOnly ? 'https://squidal.com/lfsmembership' : '/contact' ?>" class="btn btn-primary"<?= $isMembersOnly ? ' target="_blank" rel="noopener noreferrer"' : '' ?>>
+          <?php $regHref = !empty($ev['registrationLink']) ? $ev['registrationLink'] : ($isMembersOnly ? 'https://squidal.com/lfsmembership' : '/contact'); ?>
+          <a href="<?= htmlspecialchars($regHref) ?>" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
             <i class="fas <?= $registerIcon ?>" aria-hidden="true"></i> <?= $registerLabel ?>
           </a>
           <?php else: ?>
-          <a href="/contact" class="btn btn-primary">
+          <?php $regHref = !empty($ev['registrationLink']) ? $ev['registrationLink'] : '/contact'; ?>
+          <a href="<?= htmlspecialchars($regHref) ?>" class="btn btn-primary"<?= !empty($ev['registrationLink']) ? ' target="_blank" rel="noopener noreferrer"' : '' ?>>
             <i class="fas fa-envelope" aria-hidden="true"></i> Register Interest
           </a>
           <?php endif; ?>
@@ -401,7 +403,19 @@ $yearNum   = $eDate ? $eDate->format('Y')          : '';
           </div>
           <?php endif; ?>
 
-          <a href="<?= $isOpen && $isMembersOnly ? 'https://squidal.com/lfsmembership' : '/contact' ?>" class="btn btn-primary w-full justify-center mt-5"<?= $isOpen && $isMembersOnly ? ' target="_blank" rel="noopener noreferrer"' : '' ?>>
+          <?php
+            if (!empty($ev['registrationLink'])) {
+              $sidebarRegHref   = $ev['registrationLink'];
+              $sidebarRegTarget = ' target="_blank" rel="noopener noreferrer"';
+            } elseif ($isOpen && $isMembersOnly) {
+              $sidebarRegHref   = 'https://squidal.com/lfsmembership';
+              $sidebarRegTarget = ' target="_blank" rel="noopener noreferrer"';
+            } else {
+              $sidebarRegHref   = '/contact';
+              $sidebarRegTarget = '';
+            }
+          ?>
+          <a href="<?= htmlspecialchars($sidebarRegHref) ?>" class="btn btn-primary w-full justify-center mt-5"<?= $sidebarRegTarget ?>>
             <?php if ($isOpen): ?>
             <i class="fas <?= $registerIcon ?>" aria-hidden="true"></i> <?= $registerLabel ?>
             <?php else: ?>

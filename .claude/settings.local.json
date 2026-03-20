@@ -6,7 +6,10 @@
       "Bash(grep -rn public C:xampphtdocslfs-website-php --include=*.php --include=*.md --include=*.json --include=*.js)",
       "Bash(find C:xampphtdocslfs-website-php -type f \\\\\\(-name *.php -o -name *.js -o -name *.css -o -name *.json -o -name .htaccess -o -name *.md -o -name *.txt -o -name *.config -o -name tailwind.config.js -o -name package.json -o -name .gitignore \\\\\\) -not -path */node_modules/* -not -path */vendor/*)",
       "Bash(grep:*)",
-      "Bash(find C:xampphtdocslfs-website-php -type f \\\\\\(-name *.sql -o -name *.xml -o -name *.yaml -o -name *.yml \\\\\\) ! -path */node_modules/* ! -path */vendor/* ! -path */.git/*)"
+      "Bash(find C:xampphtdocslfs-website-php -type f \\\\\\(-name *.sql -o -name *.xml -o -name *.yaml -o -name *.yml \\\\\\) ! -path */node_modules/* ! -path */vendor/* ! -path */.git/*)",
+      "Read(//c/xampp/**)",
+      "Bash(./mysql/bin/mysql.exe -u root lfs_db -e \"ALTER TABLE events ADD COLUMN registration_link VARCHAR\\(2048\\) NULL DEFAULT NULL AFTER registration_type;\")",
+      "Bash(/c/xampp/mysql/bin/mysql.exe -u root lfs_db -e \"ALTER TABLE events ADD COLUMN registration_link VARCHAR\\(2048\\) NULL DEFAULT NULL AFTER registration_type;\" 2>&1)"
     ]
   }
 }

@@ -135,6 +135,7 @@ class EventController
                 'registrationOpen'  => $body['registrationOpen']   ?: null,
                 'registrationClose' => $body['registrationClose']  ?: null,
                 'registrationType'  => $body['registrationType']   ?? 'open',
+                'registrationLink'  => $body['registrationLink']   ?: null,
                 'bannerImage'       => $bannerImage,
             ]);
 
@@ -223,6 +224,7 @@ class EventController
                 'registrationOpen'  => $body['registrationOpen']   ?: null,
                 'registrationClose' => $body['registrationClose']  ?: null,
                 'registrationType'  => $body['registrationType']   ?? 'open',
+                'registrationLink'  => $body['registrationLink']   ?: null,
                 'bannerImage'       => $bannerImage,
             ]);
 

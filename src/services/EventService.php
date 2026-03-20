@@ -154,12 +154,12 @@ class EventService
               (title, slug, description, location, event_date, distance,
                recurrence_type, recurrence_days,
                category, registration_open, registration_close, registration_type,
-               banner_image, created_by)
+               registration_link, banner_image, created_by)
             VALUES
               (:title, :slug, :description, :location, :event_date, :distance,
                :recurrence_type, :recurrence_days,
                :category, :registration_open, :registration_close, :registration_type,
-               :banner_image, :created_by)
+               :registration_link, :banner_image, :created_by)
         ';
 
         $stmt = $this->db->prepare($sql);
@@ -176,6 +176,7 @@ class EventService
             ':registration_open'  => $this->normaliseDatetime($data['registrationOpen']  ?? null),
             ':registration_close' => $this->normaliseDatetime($data['registrationClose'] ?? null),
             ':registration_type'  => $data['registrationType']  ?? 'open',
+            ':registration_link'  => $data['registrationLink']  ?? null,
             ':banner_image'       => $data['bannerImage']       ?? null,
             ':created_by'         => $data['createdBy']         ?? null,
         ]);
@@ -222,6 +223,7 @@ class EventService
             'registrationOpen'  => 'registration_open',
             'registrationClose' => 'registration_close',
             'registrationType'  => 'registration_type',
+            'registrationLink'  => 'registration_link',
             'bannerImage'      => 'banner_image',
             'createdBy'       => 'created_by',
         ];
@@ -286,6 +288,7 @@ class EventService
             'registrationOpen'  => $row['registration_open']   ?? null,
             'registrationClose' => $row['registration_close']  ?? null,
             'registrationType'  => $row['registration_type']   ?? 'open',
+            'registrationLink'  => $row['registration_link']   ?? null,
             'bannerImage'       => $this->sanitiseBannerUrl($row['banner_image'] ?? null),
             'createdBy'         => $row['created_by']         ?? null,
             'createdAt'         => $row['created_at'],

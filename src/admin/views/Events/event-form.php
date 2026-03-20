@@ -218,6 +218,18 @@ function toDateTimeLocal(?string $d): string {
       </div>
     </div>
 
+    <!-- External registration link -->
+    <div class="form-group" style="margin-bottom:1.25rem;">
+      <label class="form-label" for="registrationLink">External registration link</label>
+      <input type="url" id="registrationLink" name="registrationLink"
+             value="<?= htmlspecialchars($ev['registrationLink'] ?? '') ?>"
+             placeholder="https://squidal.com/… or any external URL"
+             style="width:100%; padding:0.6rem 0.85rem; background:var(--black-soft); border:1px solid var(--border-mid); border-radius:8px; color:var(--off-white); font-family:var(--font-body); font-size:0.9rem;" />
+      <small style="display:block; margin-top:0.35rem; color:var(--text-dim); font-size:0.8rem;">
+        If set, the Register button will link here instead of the contact page.
+      </small>
+    </div>
+
     <!-- Registration open / close dates — hidden when type is 'none' -->
     <div id="reg_dates_wrap">
       <div class="form-group" style="margin-bottom:1.25rem;">
