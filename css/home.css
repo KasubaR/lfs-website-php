@@ -215,7 +215,7 @@
   font-size: 0.68rem;
   font-weight: 600;
   letter-spacing: 0.08em;
-  color: var(--text-muted);
+  color: var(--black);
   text-transform: uppercase;
 }
 
@@ -229,7 +229,7 @@
 
 .event-card__meta {
   font-size: 0.78rem;
-  color: var(--text-muted);
+  color: var(--black);
 }
 
 .event-card__actions {

@@ -8,7 +8,7 @@
    ============================================================ */
 
 /* ── Helpers ─────────────────────────────────────────────── */
-$now = new DateTime();
+$now = new DateTime('today'); // midnight today — compares date-only against stored event dates
 
 /**
  * Derive a display status from the event fields.

@@ -72,7 +72,7 @@ $productsData = !empty($products)
     </div>
     <?php if (!empty($productsData)): ?>
     <a href="/shop" class="btn btn-primary shop-preview__cta">
-      View All Products
+      Browse Full Collection <i class="fas fa-arrow-right" aria-hidden="true"></i>
     </a>
     <?php endif; ?>
   </div>
@@ -137,9 +137,6 @@ $productsData = !empty($products)
       <i class="fas fa-shield-halved" aria-hidden="true"></i>
       Official LFS Regalia &mdash; quality gear for every runner.
     </p>
-    <a href="/shop" class="btn btn-outline">
-      Browse Full Collection <i class="fas fa-arrow-right" aria-hidden="true"></i>
-    </a>
   </div>
   <?php endif; ?>
 

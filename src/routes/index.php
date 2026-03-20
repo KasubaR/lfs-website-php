@@ -196,7 +196,7 @@ if ($method === 'GET' && $seg0 === '') {
         error_log('[LFS] Home news posts error: ' . $e->getMessage());
     }
 
-    $heroImage  = '/images/LSD07.02.2026-3.jpg';
+    $heroImage  = '/images/home/home-hero.jpg';
     $title      = 'Home';
     $description = "Zambia's biggest running community. Train. Run. Compete. Together. Join LFS today.";
     $page       = 'home';
@@ -430,6 +430,21 @@ if ($method === 'GET' && $seg0 === 'about') {
 
     ob_start();
     require __DIR__ . '/../../src/views/pages/about.php';
+    $content = ob_get_clean();
+    require __DIR__ . '/../../src/views/layouts/main.php';
+    exit;
+}
+
+/* ════════════════════════════════════════════════════════════
+   GET /privacy  — Privacy Policy
+   ════════════════════════════════════════════════════════════ */
+if ($method === 'GET' && $seg0 === 'privacy') {
+    $title       = 'Privacy Policy';
+    $description = 'How Lusaka Fitness Squad collects, uses, and protects your personal information.';
+    $page        = 'privacy';
+
+    ob_start();
+    require __DIR__ . '/../../src/views/pages/privacy.php';
     $content = ob_get_clean();
     require __DIR__ . '/../../src/views/layouts/main.php';
     exit;

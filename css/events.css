@@ -569,7 +569,8 @@
    ════════════════════════════════════════════════════════════ */
 
 .event-card[hidden],
-.past-event-card[hidden] {
+.past-event-card[hidden],
+.events-empty[hidden] {
   display: none !important;
 }
 

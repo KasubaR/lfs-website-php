@@ -409,6 +409,11 @@ function animateCounters() {
       if (!entry.isIntersecting) return;
       const el     = entry.target;
       const target = parseInt(el.dataset.count, 10);
+      observer.unobserve(el);
+
+      // Skip animation for non-numeric values (e.g. 'K1,000', '100K+')
+      if (isNaN(target)) return;
+
       const suffix = el.dataset.suffix ?? '';
       const duration = 1200;
       const start  = performance.now();
@@ -421,7 +426,6 @@ function animateCounters() {
       };
 
       requestAnimationFrame(tick);
-      observer.unobserve(el);
     });
   }, { threshold: 0.5 });
 

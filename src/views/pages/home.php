@@ -15,7 +15,7 @@ $posts          = $posts          ?? [];
 $heroSlides     = $heroSlides     ?? [];
 
 // Build ordered URL list from slider media; fall back to static image
-$_heroDefault = '/images/home/home-hero.jpg';
+$_heroDefault = $heroImage ?? '/images/home/home-hero.jpg';
 $_slideUrls   = array_values(array_filter(array_map(function (array $s): string {
     return $s['urls']['large'] ?? $s['urls']['original'] ?? $s['urls']['medium'] ?? '';
 }, $heroSlides)));
