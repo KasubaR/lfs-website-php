@@ -16,9 +16,10 @@ require_once __DIR__ . '/../config/Database.php';
 class EventService
 {
     /** Error codes — match the JS constants for consistent controller handling. */
-    public const SLUG_TAKEN_CODE        = 'SLUG_TAKEN';
-    public const DATE_ORDER_INVALID_CODE = 'DATE_ORDER_INVALID';
-    public const INVALID_BANNER_URL_CODE = 'INVALID_BANNER_URL';
+    public const SLUG_TAKEN_CODE         = 'SLUG_TAKEN';
+    public const DATE_ORDER_INVALID_CODE  = 'DATE_ORDER_INVALID';
+    public const INVALID_BANNER_URL_CODE  = 'INVALID_BANNER_URL';
+    public const FEATURE_ON_HOME_NO_BANNER_CODE = 'FEATURE_ON_HOME_NO_BANNER';
 
     private PDO $db;
 
@@ -109,6 +110,58 @@ class EventService
     }
 
     /**
+     * All upcoming events marked for the home hero, with a non-empty banner, soonest first.
+     *
+     * @return list<array>
+     */
+    public function getHomeHeroFeaturedEvents(int $limit = 20): array
+    {
+        $limit = max(1, min(30, $limit));
+        $sql   = "SELECT * FROM events
+            WHERE feature_on_home = 1
+              AND banner_image IS NOT NULL
+              AND TRIM(banner_image) <> ''
+              AND event_date >= UTC_TIMESTAMP()
+            ORDER BY event_date ASC
+            LIMIT " . (int) $limit;
+        $stmt = $this->db->query($sql);
+        $rows = $stmt->fetchAll();
+        return array_map([$this, 'toEvent'], $rows);
+    }
+
+    /**
+     * First matching upcoming home-hero event, or null. Convenience for callers that only need one row.
+     */
+    public function getHomeHeroFeaturedEvent(): ?array
+    {
+        $a = $this->getHomeHeroFeaturedEvents(1);
+        return $a[0] ?? null;
+    }
+
+    /**
+     * Turn home-hero feature on or off for one event. Several events may be featured at once.
+     *
+     * @throws RuntimeException  code FEATURE_ON_HOME_NO_BANNER if $on and event has no banner
+     */
+    public function setHomePageHeroForEvent(string $id, bool $on): void
+    {
+        $ev = $this->getEventById($id);
+        if ($ev === null) {
+            throw new RuntimeException('Event not found.');
+        }
+        if ($on) {
+            if (empty($ev['bannerImage'])) {
+                throw $this->codeException(
+                    'A banner image is required to feature an event on the home page.',
+                    self::FEATURE_ON_HOME_NO_BANNER_CODE
+                );
+            }
+        }
+        $u = $this->db->prepare('UPDATE events SET feature_on_home = :v WHERE id = :id');
+        $u->execute([':v' => $on ? 1 : 0, ':id' => $id]);
+    }
+
+    /**
      * Get most recently created events (by created_at DESC), for activity feed.
      *
      * @param  int $limit  Max number of events to return (default 10)
@@ -149,6 +202,17 @@ class EventService
             throw $this->codeException('This slug is already in use. Choose another.', self::SLUG_TAKEN_CODE);
         }
 
+        $wantsHomeHero = !empty($data['featureOnHome']);
+        if ($wantsHomeHero) {
+            $b = trim((string)($data['bannerImage'] ?? ''));
+            if ($b === '') {
+                throw $this->codeException(
+                    'A banner image is required to feature an event on the home page.',
+                    self::FEATURE_ON_HOME_NO_BANNER_CODE
+                );
+            }
+        }
+
         $sql = '
             INSERT INTO events
               (title, slug, description, location, event_date, distance,
@@ -162,26 +226,39 @@ class EventService
                :registration_link, :banner_image, :created_by)
         ';
 
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([
-            ':title'              => $data['title'],
-            ':slug'               => $slug,
-            ':description'        => $data['description']       ?? '',
-            ':location'           => $data['location']          ?? '',
-            ':event_date'         => $this->normaliseDatetime($data['eventDate'] ?? null),
-            ':distance'           => $data['distance']          ?? '',
-            ':recurrence_type'    => $data['recurrenceType']    ?? 'none',
-            ':recurrence_days'    => $data['recurrenceDays']    ?? null,
-            ':category'           => $data['category']          ?? '',
-            ':registration_open'  => $this->normaliseDatetime($data['registrationOpen']  ?? null),
-            ':registration_close' => $this->normaliseDatetime($data['registrationClose'] ?? null),
-            ':registration_type'  => $data['registrationType']  ?? 'open',
-            ':registration_link'  => $data['registrationLink']  ?? null,
-            ':banner_image'       => $data['bannerImage']       ?? null,
-            ':created_by'         => $data['createdBy']         ?? null,
-        ]);
+        $this->db->beginTransaction();
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                ':title'              => $data['title'],
+                ':slug'               => $slug,
+                ':description'        => $data['description']       ?? '',
+                ':location'           => $data['location']          ?? '',
+                ':event_date'         => $this->normaliseDatetime($data['eventDate'] ?? null),
+                ':distance'           => $data['distance']          ?? '',
+                ':recurrence_type'    => $data['recurrenceType']    ?? 'none',
+                ':recurrence_days'    => $data['recurrenceDays']    ?? null,
+                ':category'           => $data['category']          ?? '',
+                ':registration_open'  => $this->normaliseDatetime($data['registrationOpen']  ?? null),
+                ':registration_close' => $this->normaliseDatetime($data['registrationClose'] ?? null),
+                ':registration_type'  => $data['registrationType']  ?? 'open',
+                ':registration_link'  => $data['registrationLink']  ?? null,
+                ':banner_image'       => $data['bannerImage']       ?? null,
+                ':created_by'         => $data['createdBy']         ?? null,
+            ]);
 
-        $id = $this->db->lastInsertId();
+            $id = (string) $this->db->lastInsertId();
+            if ($wantsHomeHero) {
+                $u = $this->db->prepare('UPDATE events SET feature_on_home = 1 WHERE id = :id');
+                $u->execute([':id' => $id]);
+            }
+
+            $this->db->commit();
+        } catch (Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+
         return $this->getEventById($id) ?? [];
     }
 
@@ -290,6 +367,7 @@ class EventService
             'registrationType'  => $row['registration_type']   ?? 'open',
             'registrationLink'  => $row['registration_link']   ?? null,
             'bannerImage'       => $this->sanitiseBannerUrl($row['banner_image'] ?? null),
+            'featureOnHome'     => (bool)($row['feature_on_home'] ?? 0),
             'createdBy'         => $row['created_by']         ?? null,
             'createdAt'         => $row['created_at'],
             'updatedAt'         => $row['updated_at'],

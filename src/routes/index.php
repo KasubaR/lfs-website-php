@@ -137,6 +137,32 @@ if ($method === 'GET' && $seg0 === '') {
     $heroSlides = [];
     try { $heroSlides = $galleryService->getHomepageSliderMedia(8); } catch (Throwable) {}
 
+    $heroFeaturedEvents = [];
+    try {
+        $base = defined('BASE_PATH') ? BASE_PATH : '';
+        foreach ($eventService->getHomeHeroFeaturedEvents(20) as $fe) {
+            if (empty($fe['bannerImage'])) {
+                continue;
+            }
+            $dateLine = '—';
+            if (!empty($fe['eventDate'])) {
+                try {
+                    $dt = new DateTime($fe['eventDate']);
+                    $dateLine = $dt->format('D, j F Y');
+                } catch (Throwable) {
+                }
+            }
+            $slug = isset($fe['slug']) ? trim((string)$fe['slug']) : '';
+            $heroFeaturedEvents[] = [
+                'title'         => (string)($fe['title'] ?? ''),
+                'dateLine'      => $dateLine,
+                'link'          => $slug !== '' ? $base . '/events/' . rawurlencode($slug) : '',
+                'bannerImage'   => (string) $fe['bannerImage'],
+            ];
+        }
+    } catch (Throwable) {
+    }
+
     try {
         $rawEvents = $eventService->getUpcomingEvents(5);
         $events    = array_map('mapEventForHome', $rawEvents);
@@ -201,9 +227,26 @@ if ($method === 'GET' && $seg0 === '') {
     $description = "Zambia's biggest running community. Train. Run. Compete. Together. Join LFS today.";
     $page       = 'home';
     $products   = $homeProducts;
-    // Only preload hero image when it is actually the first slide (no gallery slider media)
-    $heroPreload = empty($heroSlides)
-        ? '<link rel="preload" as="image" href="' . htmlspecialchars($heroImage, ENT_QUOTES) . '">'
+
+    $heroPreloadHref = null;
+    if (!empty($heroFeaturedEvents[0]['bannerImage'])) {
+        $hb = $heroFeaturedEvents[0]['bannerImage'];
+        $heroPreloadHref = preg_match('#^https?://#i', $hb) === 1
+            ? $hb
+            : lfs_public_url($hb);
+    } elseif (empty($heroSlides)) {
+        $heroPreloadHref = lfs_public_url($heroImage);
+    } else {
+        $h0  = $heroSlides[0];
+        $h0u = is_array($h0) ? ($h0['urls']['large'] ?? $h0['urls']['original'] ?? $h0['urls']['medium'] ?? '') : '';
+        if (is_string($h0u) && $h0u !== '') {
+            $heroPreloadHref = preg_match('#^https?://#i', $h0u) === 1
+                ? $h0u
+                : lfs_public_url($h0u);
+        }
+    }
+    $heroPreload = $heroPreloadHref !== null
+        ? '<link rel="preload" as="image" href="' . htmlspecialchars($heroPreloadHref, ENT_QUOTES) . '">'
         : '';
     $extraStyles  = $heroPreload . '<link rel="stylesheet" href="/css/home.css">';
     $extraScripts = '<script src="/js/home.js" defer></script>';

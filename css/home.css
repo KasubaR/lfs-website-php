@@ -10,6 +10,99 @@
   min-height: 65vh;
 }
 
+/* Featured event(s) — name + date; syncs with hero image slider */
+.home-hero__featured-wrap {
+  margin-bottom: 0.5rem;
+  transition: opacity 0.45s ease, max-height 0.45s ease, margin 0.45s ease;
+}
+
+.home-hero__featured-wrap--conceal {
+  opacity: 0;
+  max-height: 0;
+  margin-bottom: 0;
+  overflow: hidden;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.home-hero__featured-panels {
+  position: relative;
+  min-height: 4.5rem;
+}
+
+.home-hero__featured {
+  margin-bottom: 0;
+}
+
+.home-hero__featured-panel {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1s ease;
+  z-index: 0;
+}
+
+.home-hero__featured-panel--active {
+  opacity: 1;
+  pointer-events: auto;
+  z-index: 1;
+}
+
+.home-hero__content .home-hero__featured-wrap + h1 {
+  margin-top: 0.75rem;
+}
+
+.home-hero__featured-kicker {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--green-bright);
+  margin: 0 0 0.5rem;
+}
+
+.home-hero__featured-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+  line-height: 1.2;
+  letter-spacing: 0.03em;
+  color: #fff;
+  margin: 0;
+}
+
+.home-hero__featured-date {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+  letter-spacing: 0.02em;
+}
+
+.home-hero__featured-link--block {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  transition: color var(--transition-fast), transform var(--transition-fast);
+}
+
+.home-hero__featured-link--block .home-hero__featured-title {
+  transition: color var(--transition-fast);
+}
+
+.home-hero__featured-link--block:hover .home-hero__featured-title,
+.home-hero__featured-link--block:focus-visible .home-hero__featured-title {
+  color: var(--green-bright);
+}
+
+.home-hero__featured-link--block:hover,
+.home-hero__featured-link--block:focus-visible {
+  transform: translateX(2px);
+}
+
 .home-hero__bg {
   position: absolute;
   inset: 0;

@@ -8,7 +8,7 @@
  *
  * Event fields (camelCase in app / snake_case in DB):
  *   id, title, description, location, eventDate, distance,
- *   category, registrationOpen, registrationClose, bannerImage,
+ *   category, registrationOpen, registrationClose, bannerImage, featureOnHome,
  *   series, createdBy, createdAt, updatedAt
  */
 

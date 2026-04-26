@@ -9,7 +9,7 @@
  *   $event           null (create) or array {
  *                      id, title, slug, description, location,
  *                      eventDate, distance, category, recurrenceType, recurrenceDays,
- *                      registrationOpen, registrationClose, bannerImage
+ *                      registrationOpen, registrationClose, bannerImage, featureOnHome
  *                    }
  *   $eventCategories array of category strings
  *   $isEdit          bool
@@ -274,6 +274,14 @@ function toDateTimeLocal(?string $d): string {
       <input type="text" id="bannerImage" name="bannerImage" class="admin-input"
              value="<?= htmlspecialchars($ev['bannerImage'] ?? '') ?>"
              placeholder="https://… or /images/…" />
+      <div class="form-group" style="margin-top:1rem;">
+        <label style="display:flex; align-items:flex-start; gap:0.55rem; cursor:pointer; font-size:0.9rem; color:var(--off-white); line-height:1.4;">
+          <input type="checkbox" name="featureOnHome" value="1"
+            <?= !empty($ev['featureOnHome']) ? 'checked' : '' ?>
+            style="margin-top:0.2rem; flex-shrink:0;" />
+          <span>Feature on home page hero (banner + title shown on the hero; multiple events allowed—their slides and labels rotate first, then gallery images; requires a banner and an upcoming event date)</span>
+        </label>
+      </div>
     </div>
 
     <!-- Actions -->

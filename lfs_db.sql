@@ -110,6 +110,7 @@ CREATE TABLE `events` (
   `registration_close` datetime DEFAULT NULL,
   `registration_type` varchar(20) NOT NULL DEFAULT 'open',
   `banner_image` varchar(500) DEFAULT NULL,
+  `feature_on_home` tinyint(1) NOT NULL DEFAULT 0,
   `created_by` char(36) DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()

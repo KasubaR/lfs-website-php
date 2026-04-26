@@ -7,21 +7,37 @@
  *   $galleryPreview array   — gallery photos for preview (may be empty)
  *   $products       array   — shop products (may be empty; shop preview shows empty state)
  *   $posts          array   — news/blog posts (may be empty, falls back to defaults)
+ *   $heroFeaturedEvents  list<array{ title, dateLine, link, bannerImage }> — upcoming featured events
+ *                          (banners are prepended to the hero image slider in the same order)
  */
 $events         = $events         ?? [];
 $galleryPreview = $galleryPreview ?? [];
 $products       = $products       ?? [];
 $posts          = $posts          ?? [];
 $heroSlides     = $heroSlides     ?? [];
+$heroFeaturedEvents = $heroFeaturedEvents ?? [];
 
-// Build ordered URL list from slider media; fall back to static image
+// Build ordered URL list: featured event banner(s) first, then gallery slider (or static fallback)
 $_heroDefault = $heroImage ?? '/images/home/home-hero.jpg';
-$_slideUrls   = array_values(array_filter(array_map(function (array $s): string {
+$_galleryUrls = array_values(array_filter(array_map(function (array $s): string {
     return $s['urls']['large'] ?? $s['urls']['original'] ?? $s['urls']['medium'] ?? '';
 }, $heroSlides)));
-if (empty($_slideUrls)) {
-    $_slideUrls = [$_heroDefault];
+if (empty($_galleryUrls)) {
+    $_galleryUrls = [$_heroDefault];
 }
+
+$_feBanners = [];
+foreach ($heroFeaturedEvents as $_fe) {
+    $_b = (string)($_fe['bannerImage'] ?? '');
+    if ($_b === '') {
+        continue;
+    }
+    $_feBanners[] = preg_match('#^https?://#i', $_b) === 1
+        ? $_b
+        : lfs_public_url($_b);
+}
+$_slideUrls   = array_values(array_merge($_feBanners, $_galleryUrls));
+$_heroFeatureCount = count($_feBanners);
 ?>
 
 <!-- ══════════════════════════════════════════════
@@ -46,6 +62,43 @@ if (empty($_slideUrls)) {
 
   <div class="relative z-10 px-6 lg:px-16 py-16 lg:py-20 max-w-4xl">
     <div class="home-hero__content">
+      <?php
+      if ($_heroFeatureCount > 0):
+        $_kicker = $_heroFeatureCount > 1 ? 'Featured events' : 'Featured event';
+      ?>
+      <div
+        class="home-hero__featured-wrap"
+        data-hero-featured-count="<?= (int) $_heroFeatureCount ?>"
+        aria-label="<?= htmlspecialchars($_kicker, ENT_QUOTES, 'UTF-8') ?>"
+        role="group">
+        <p class="home-hero__featured-kicker"><?= htmlspecialchars($_kicker, ENT_QUOTES, 'UTF-8') ?></p>
+        <div class="home-hero__featured-panels">
+          <?php foreach ($heroFeaturedEvents as $_pi => $_fe):
+            $_hfeTitle = trim((string)($_fe['title'] ?? '')) !== '' ? (string) $_fe['title'] : 'Event';
+            $_hfeDate  = (string)($_fe['dateLine'] ?? '');
+            $_hfeLink  = (string)($_fe['link'] ?? '');
+            $_active   = $_pi === 0 ? ' home-hero__featured-panel--active' : '';
+          ?>
+          <div class="home-hero__featured home-hero__featured-panel<?= $_active ?>" data-featured-panel-index="<?= (int) $_pi ?>">
+            <?php if ($_hfeLink !== ''): ?>
+            <a href="<?= htmlspecialchars($_hfeLink, ENT_QUOTES, 'UTF-8') ?>" class="home-hero__featured-link home-hero__featured-link--block">
+              <span class="home-hero__featured-title"><?= htmlspecialchars($_hfeTitle, ENT_QUOTES, 'UTF-8') ?></span>
+              <?php if ($_hfeDate !== '' && $_hfeDate !== '—'): ?>
+              <span class="home-hero__featured-date"><?= htmlspecialchars($_hfeDate, ENT_QUOTES, 'UTF-8') ?></span>
+              <?php endif; ?>
+            </a>
+            <?php else: ?>
+            <p class="home-hero__featured-title"><?= htmlspecialchars($_hfeTitle, ENT_QUOTES, 'UTF-8') ?></p>
+            <?php if ($_hfeDate !== '' && $_hfeDate !== '—'): ?>
+            <p class="home-hero__featured-date"><?= htmlspecialchars($_hfeDate, ENT_QUOTES, 'UTF-8') ?></p>
+            <?php endif; ?>
+            <?php endif; ?>
+          </div>
+          <?php endforeach; ?>
+        </div>
+      </div>
+      <?php endif; ?>
+
       <h1 class="font-['Bebas_Neue'] text-5xl sm:text-6xl lg:text-7xl leading-tight text-white mt-6 animate-fadeUp"
         style="animation-delay:0.15s">
         Zambia's Biggest<br>
@@ -102,10 +155,26 @@ if (empty($_slideUrls)) {
   const dots   = document.querySelectorAll('.hero-slider-dot');
   if (slides.length <= 1) return;
 
+  const wrap = document.querySelector('.home-hero__featured-wrap');
+  const featuredCount = wrap ? parseInt(wrap.getAttribute('data-hero-featured-count') || '0', 10) : 0;
+  const panels = document.querySelectorAll('.home-hero__featured-panel');
+
+  function syncFeaturedPanels(slideIndex) {
+    if (!wrap || featuredCount <= 0) return;
+    if (slideIndex < featuredCount) {
+      wrap.classList.remove('home-hero__featured-wrap--conceal');
+      panels.forEach(function (p) {
+        var pi = parseInt(p.getAttribute('data-featured-panel-index') || '0', 10);
+        p.classList.toggle('home-hero__featured-panel--active', pi === slideIndex);
+      });
+    } else {
+      wrap.classList.add('home-hero__featured-wrap--conceal');
+    }
+  }
+
   let current   = 0;
   let timer     = null;
   const INTERVAL = 6000; // ms between slides
-  const FADE_MS  = 1000; // must match CSS transition duration
 
   function goTo(idx) {
     slides[current].classList.remove('home-hero__slide--active');
@@ -113,6 +182,7 @@ if (empty($_slideUrls)) {
     current = (idx + slides.length) % slides.length;
     slides[current].classList.add('home-hero__slide--active');
     if (dots[current]) dots[current].classList.add('hero-slider-dot--active');
+    syncFeaturedPanels(current);
   }
 
   function startTimer() {
@@ -128,6 +198,7 @@ if (empty($_slideUrls)) {
     });
   });
 
+  syncFeaturedPanels(0);
   startTimer();
 }());
 </script>

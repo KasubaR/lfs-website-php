@@ -122,6 +122,8 @@ class EventController
                 ? implode(',', array_map('trim', $body['recurrence_days']))
                 : null;
 
+            $featureOnHome = isset($body['featureOnHome']) && (string)($body['featureOnHome'] ?? '') === '1';
+
             $this->eventService->createEvent([
                 'title'             => trim($body['title']),
                 'slug'              => isset($body['slug']) ? trim($body['slug']) : null,
@@ -137,6 +139,7 @@ class EventController
                 'registrationType'  => $body['registrationType']   ?? 'open',
                 'registrationLink'  => $body['registrationLink']   ?: null,
                 'bannerImage'       => $bannerImage,
+                'featureOnHome'     => $featureOnHome,
             ]);
 
             header('Location: /admin/events');
@@ -205,6 +208,7 @@ class EventController
         }
 
         $bannerImage = $this->resolveUploadedBanner($body['bannerImage'] ?? null);
+        $featureOnHome = isset($body['featureOnHome']) && (string)($body['featureOnHome'] ?? '') === '1';
 
         try {
             $recDays = isset($body['recurrence_days']) && is_array($body['recurrence_days'])
@@ -232,6 +236,8 @@ class EventController
                 header('Location: /admin/events');
                 exit;
             }
+
+            $this->eventService->setHomePageHeroForEvent($id, $featureOnHome);
 
             // Delete old local banner only after successful DB update, when we saved a new uploaded file
             $hadNewLocalBanner = $bannerImage !== null && str_starts_with($bannerImage, '/images/events/');
