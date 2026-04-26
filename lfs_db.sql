@@ -109,6 +109,7 @@ CREATE TABLE `events` (
   `registration_open` datetime DEFAULT NULL,
   `registration_close` datetime DEFAULT NULL,
   `registration_type` varchar(20) NOT NULL DEFAULT 'open',
+  `registration_link` varchar(2048) DEFAULT NULL,
   `banner_image` varchar(500) DEFAULT NULL,
   `feature_on_home` tinyint(1) NOT NULL DEFAULT 0,
   `brochure_pdf` varchar(500) DEFAULT NULL,
