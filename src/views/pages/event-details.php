@@ -350,13 +350,20 @@ if (is_string($brochureRaw) && $brochureRaw !== '') {
             <figure class="event-detail-route">
               <figcaption class="event-detail-route__label"><?= htmlspecialchars($dLabel) ?></figcaption>
               <?php if ($dImg !== ''): ?>
-              <div class="event-detail-route__img-wrap">
+              <div class="event-detail-route__img-wrap event-detail-route__img-wrap--zoomable"
+                   data-zoom-src="<?= htmlspecialchars(lfs_public_url($dImg), ENT_QUOTES, 'UTF-8') ?>"
+                   data-zoom-alt="Route: <?= htmlspecialchars($dLabel, ENT_QUOTES, 'UTF-8') ?>"
+                   role="button" tabindex="0"
+                   aria-label="Zoom route map: <?= htmlspecialchars($dLabel, ENT_QUOTES, 'UTF-8') ?>">
                 <img
                   src="<?= htmlspecialchars(lfs_public_url($dImg), ENT_QUOTES, 'UTF-8') ?>"
                   alt="Route: <?= htmlspecialchars($dLabel) ?>"
                   class="event-detail-route__img"
                   loading="lazy"
                 />
+                <div class="event-detail-route__zoom-hint" aria-hidden="true">
+                  <i class="fas fa-magnifying-glass-plus"></i>
+                </div>
               </div>
               <?php else: ?>
               <p class="event-detail-route__no-img text-sm text-[#6b7280]">Route image will be added soon.</p>

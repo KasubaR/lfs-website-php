@@ -160,6 +160,52 @@ function initLoadMore() {
 }
 
 /* ─────────────────────────────────────────────────────────────
+   ROUTE MAP LIGHTBOX (event detail page)
+───────────────────────────────────────────────────────────── */
+function initRouteLightbox() {
+  const triggers = $$('.event-detail-route__img-wrap--zoomable');
+  if (!triggers.length) return;
+
+  // Build overlay
+  const overlay = document.createElement('div');
+  overlay.className = 'lb-overlay is-hidden';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-label', 'Route map zoom');
+  overlay.innerHTML = `
+    <button class="lb-close" aria-label="Close"><i class="fas fa-xmark"></i></button>
+    <div class="lb-content">
+      <img src="" alt="" style="max-width:92vw;max-height:88vh;object-fit:contain;border-radius:6px;">
+    </div>`;
+  document.body.appendChild(overlay);
+
+  const img   = overlay.querySelector('img');
+  const close = overlay.querySelector('.lb-close');
+
+  function open(src, alt) {
+    img.src = src;
+    img.alt = alt || '';
+    overlay.classList.remove('is-hidden');
+    document.body.style.overflow = 'hidden';
+    close.focus();
+  }
+
+  function closeLb() {
+    overlay.classList.add('is-hidden');
+    document.body.style.overflow = '';
+  }
+
+  triggers.forEach(el => {
+    el.addEventListener('click', () => open(el.dataset.zoomSrc, el.dataset.zoomAlt));
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(el.dataset.zoomSrc, el.dataset.zoomAlt); } });
+  });
+
+  close.addEventListener('click', closeLb);
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeLb(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLb(); });
+}
+
+/* ─────────────────────────────────────────────────────────────
    BOOT
 ───────────────────────────────────────────────────────────── */
 /* ─────────────────────────────────────────────────────────────
@@ -183,4 +229,5 @@ document.addEventListener('DOMContentLoaded', () => {
   initLoadMore();
   render();
   initCopyLink();
+  initRouteLightbox();
 });
