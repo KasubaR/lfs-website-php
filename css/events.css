@@ -1043,7 +1043,14 @@
 
 .event-detail-route__img-wrap--zoomable {
   position: relative;
-  cursor: zoom-in;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (pointer: fine) {
+  .event-detail-route__img-wrap--zoomable {
+    cursor: zoom-in;
+  }
 }
 
 .event-detail-route__zoom-hint {
