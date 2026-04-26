@@ -87,6 +87,7 @@ class EventController
                 ['label' => 'Events',    'url' => '/admin/events'],
                 ['label' => 'New Event'],
             ],
+            'extraScripts'    => $this->eventFormExtraScripts(),
         ]);
     }
 
@@ -107,6 +108,26 @@ class EventController
             );
             return;
         }
+        if (!empty($_REQUEST['_distanceRouteUploadError'])) {
+            $this->renderFormWithError(
+                null,
+                false,
+                'New Event',
+                $_POST,
+                (string) $_REQUEST['_distanceRouteUploadError']
+            );
+            return;
+        }
+        if (!empty($_REQUEST['_brochureUploadError'])) {
+            $this->renderFormWithError(
+                null,
+                false,
+                'New Event',
+                $_POST,
+                (string) $_REQUEST['_brochureUploadError']
+            );
+            return;
+        }
 
         $body = $_POST;
         $isWeekly = ($body['recurrenceType'] ?? 'none') === 'weekly';
@@ -116,6 +137,9 @@ class EventController
         }
 
         $bannerImage = $this->resolveUploadedBanner($body['bannerImage'] ?? null);
+        $brochurePdf = $this->resolveEventBrochureFromRequest(null);
+        $distRoutes  = $this->collectDistanceRoutesFromRequest();
+        $distSummary = $this->distanceSummaryFromRoutes($distRoutes);
 
         try {
             $recDays = isset($body['recurrence_days']) && is_array($body['recurrence_days'])
@@ -124,13 +148,13 @@ class EventController
 
             $featureOnHome = isset($body['featureOnHome']) && (string)($body['featureOnHome'] ?? '') === '1';
 
-            $this->eventService->createEvent([
+            $created = $this->eventService->createEvent([
                 'title'             => trim($body['title']),
                 'slug'              => isset($body['slug']) ? trim($body['slug']) : null,
                 'description'       => $body['description']    ?? '',
                 'location'          => $body['location']        ?? '',
                 'eventDate'         => $body['eventDate']       ?: null,
-                'distance'          => $body['distance']        ?? '',
+                'distance'          => $distSummary,
                 'recurrenceType'    => $body['recurrenceType']  ?? 'none',
                 'recurrenceDays'    => $recDays,
                 'category'          => $body['category']        ?? '',
@@ -139,8 +163,11 @@ class EventController
                 'registrationType'  => $body['registrationType']   ?? 'open',
                 'registrationLink'  => $body['registrationLink']   ?: null,
                 'bannerImage'       => $bannerImage,
+                'brochurePdf'       => $brochurePdf,
                 'featureOnHome'     => $featureOnHome,
             ]);
+
+            $this->eventService->replaceEventDistanceRoutes((string) $created['id'], $distRoutes);
 
             header('Location: /admin/events');
             exit;
@@ -173,6 +200,7 @@ class EventController
                 ['label' => 'Events', 'url' => '/admin/events'],
                 ['label' => $event['title']],
             ],
+            'extraScripts'    => $this->eventFormExtraScripts(),
         ]);
     }
 
@@ -193,6 +221,28 @@ class EventController
             );
             return;
         }
+        if (!empty($_REQUEST['_distanceRouteUploadError'])) {
+            $existing = $this->safeGetById($id);
+            $this->renderFormWithError(
+                $existing ? array_merge($existing, $_POST) : $_POST,
+                true,
+                $_POST['title'] ?? ($existing['title'] ?? 'Edit'),
+                array_merge($existing ?? [], $_POST),
+                (string) $_REQUEST['_distanceRouteUploadError']
+            );
+            return;
+        }
+        if (!empty($_REQUEST['_brochureUploadError'])) {
+            $existing = $this->safeGetById($id);
+            $this->renderFormWithError(
+                $existing ? array_merge($existing, $_POST) : $_POST,
+                true,
+                $_POST['title'] ?? ($existing['title'] ?? 'Edit'),
+                array_merge($existing ?? [], $_POST),
+                (string) $_REQUEST['_brochureUploadError']
+            );
+            return;
+        }
 
         $body = $_POST;
         $isWeekly = ($body['recurrenceType'] ?? 'none') === 'weekly';
@@ -207,8 +257,12 @@ class EventController
             exit;
         }
 
-        $bannerImage = $this->resolveUploadedBanner($body['bannerImage'] ?? null);
+        $bannerImage   = $this->resolveUploadedBanner($body['bannerImage'] ?? null);
+        $brochurePdf   = $this->resolveEventBrochureFromRequest($existing);
         $featureOnHome = isset($body['featureOnHome']) && (string)($body['featureOnHome'] ?? '') === '1';
+        $distRoutes    = $this->collectDistanceRoutesFromRequest();
+        $distSummary   = $this->distanceSummaryFromRoutes($distRoutes);
+        $oldBrochure   = $existing['brochurePdf'] ?? null;
 
         try {
             $recDays = isset($body['recurrence_days']) && is_array($body['recurrence_days'])
@@ -221,7 +275,7 @@ class EventController
                 'description'       => $body['description']    ?? '',
                 'location'          => $body['location']        ?? '',
                 'eventDate'         => $body['eventDate']       ?: null,
-                'distance'          => $body['distance']        ?? '',
+                'distance'          => $distSummary,
                 'recurrenceType'    => $body['recurrenceType']  ?? 'none',
                 'recurrenceDays'    => $recDays,
                 'category'          => $body['category']        ?? '',
@@ -230,6 +284,7 @@ class EventController
                 'registrationType'  => $body['registrationType']   ?? 'open',
                 'registrationLink'  => $body['registrationLink']   ?: null,
                 'bannerImage'       => $bannerImage,
+                'brochurePdf'       => $brochurePdf,
             ]);
 
             if (!$updated) {
@@ -238,6 +293,7 @@ class EventController
             }
 
             $this->eventService->setHomePageHeroForEvent($id, $featureOnHome);
+            $this->eventService->replaceEventDistanceRoutes($id, $distRoutes);
 
             // Delete old local banner only after successful DB update, when we saved a new uploaded file
             $hadNewLocalBanner = $bannerImage !== null && str_starts_with($bannerImage, '/images/events/');
@@ -246,6 +302,13 @@ class EventController
                 $oldPath = $this->publicRoot . '/' . ltrim($existing['bannerImage'], '/');
                 if (file_exists($oldPath)) {
                     @unlink($oldPath);
+                }
+            }
+
+            if (is_string($oldBrochure) && str_starts_with($oldBrochure, '/files/event-brochures/') && $oldBrochure !== $brochurePdf) {
+                $bp = $this->publicRoot . '/' . ltrim($oldBrochure, '/\\');
+                if (file_exists($bp)) {
+                    @unlink($bp);
                 }
             }
 
@@ -275,6 +338,13 @@ class EventController
             $filePath = $this->publicRoot . '/' . ltrim($event['bannerImage'], '/');
             if (file_exists($filePath)) {
                 @unlink($filePath);
+            }
+        }
+
+        if ($event && !empty($event['brochurePdf']) && str_starts_with($event['brochurePdf'], '/files/event-brochures/')) {
+            $bp = $this->publicRoot . '/' . ltrim($event['brochurePdf'], '/\\');
+            if (file_exists($bp)) {
+                @unlink($bp);
             }
         }
 
@@ -325,7 +395,91 @@ class EventController
                 ['label' => 'Events', 'url' => '/admin/events'],
                 ['label' => $pageTitle],
             ],
+            'extraScripts'    => $this->eventFormExtraScripts(),
         ]);
+    }
+
+    private function eventFormExtraScripts(): string
+    {
+        if (!function_exists('lfs_public_url')) {
+            require_once __DIR__ . '/../../utility/helpers.php';
+        }
+        $src = lfs_public_url('/admin/js/event-distances.js');
+        return '<script defer src="' . htmlspecialchars($src, ENT_QUOTES, 'UTF-8') . '"></script>';
+    }
+
+    /**
+     * @return list<array{label: string, routeImage: string|null}>
+     */
+    private function collectDistanceRoutesFromRequest(): array
+    {
+        $labels   = $_POST['dist_label'] ?? [];
+        $existing = $_POST['dist_route_existing'] ?? [];
+        $stored   = $_POST['dist_route_stored'] ?? [];
+        if (!is_array($labels)) {
+            $labels = [];
+        }
+        if (!is_array($existing)) {
+            $existing = [];
+        }
+        if (!is_array($stored)) {
+            $stored = [];
+        }
+        $n      = count($labels);
+        $routes = [];
+        for ($i = 0; $i < $n; $i++) {
+            $label = trim((string) ($labels[$i] ?? ''));
+            if ($label === '') {
+                continue;
+            }
+            $img = $stored[$i] ?? null;
+            if (!is_string($img) || $img === '') {
+                $img = trim((string) ($existing[$i] ?? ''));
+            }
+            if ($img === '') {
+                $img = null;
+            }
+            $routes[] = ['label' => $label, 'routeImage' => $img];
+        }
+        return $routes;
+    }
+
+    /**
+     * @param list<array{label: string, routeImage: string|null}> $routes
+     */
+    private function distanceSummaryFromRoutes(array $routes): string
+    {
+        $labels = [];
+        foreach ($routes as $r) {
+            $l = trim((string) ($r['label'] ?? ''));
+            if ($l !== '') {
+                $labels[] = $l;
+            }
+        }
+        return $labels === [] ? '' : implode(', ', $labels);
+    }
+
+    /**
+     * Brochure PDF: optional upload (brochure_pdf_stored), URL/path field (brochurePdf), or keep existing.
+     * Checkbox remove_brochure=1 clears the stored brochure on edit.
+     */
+    private function resolveEventBrochureFromRequest(?array $existing): ?string
+    {
+        if (isset($_POST['remove_brochure']) && (string) $_POST['remove_brochure'] === '1') {
+            return null;
+        }
+        $stored = $_POST['brochure_pdf_stored'] ?? '';
+        if (is_string($stored) && $stored !== '') {
+            return trim($stored);
+        }
+        $text = trim((string) ($_POST['brochurePdf'] ?? ''));
+        if ($text !== '') {
+            return $text;
+        }
+        if ($existing !== null) {
+            return $existing['brochurePdf'] ?? null;
+        }
+        return null;
     }
 
     /**

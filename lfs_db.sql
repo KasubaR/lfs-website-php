@@ -111,6 +111,7 @@ CREATE TABLE `events` (
   `registration_type` varchar(20) NOT NULL DEFAULT 'open',
   `banner_image` varchar(500) DEFAULT NULL,
   `feature_on_home` tinyint(1) NOT NULL DEFAULT 0,
+  `brochure_pdf` varchar(500) DEFAULT NULL,
   `created_by` char(36) DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
@@ -122,6 +123,23 @@ CREATE TABLE `events` (
 
 INSERT INTO `events` (`id`, `title`, `slug`, `description`, `location`, `event_date`, `distance`, `recurrence_type`, `recurrence_days`, `category`, `registration_open`, `registration_close`, `registration_type`, `banner_image`, `created_by`, `created_at`, `updated_at`) VALUES
 ('069e16c4-1d90-11f1-811d-3822e21845b6', 'LFS Saturday', 'lfs-saturday', 'Thanks', 'Hosted by a different satellite group each week.', '2026-03-14 20:17:00', '10K', 'weekly', 'saturday', 'LSD', '2026-03-11 20:17:00', '2026-03-13 20:18:00', 'members', '/images/events/event-f29aa9b0dc2cc99d6f83a3aae5a3e609af692d00.jpg', NULL, '2026-03-11 21:19:44', '2026-03-11 21:25:14');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `event_distance_routes`
+--
+
+CREATE TABLE `event_distance_routes` (
+  `id` char(36) NOT NULL,
+  `event_id` char(36) NOT NULL,
+  `label` varchar(80) NOT NULL,
+  `route_image` varchar(500) DEFAULT NULL,
+  `sort_order` int unsigned NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `idx_event_distance_routes_event` (`event_id`),
+  CONSTRAINT `fk_event_distance_routes_event` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 

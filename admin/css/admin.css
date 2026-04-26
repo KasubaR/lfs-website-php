@@ -1226,6 +1226,13 @@ input[type="file"].admin-input::file-selector-button:hover {
   display: block;
 }
 
+.event-form__distances-wrap .event-form__distance-row {
+  padding: 1rem;
+  border: 1px solid var(--border-mid);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
 /* ── TABLE ── */
 .admin-table {
   width: 100%;

@@ -81,7 +81,7 @@ class EventService
         $stmt = $this->db->prepare('SELECT * FROM events WHERE id = :id LIMIT 1');
         $stmt->execute([':id' => $id]);
         $row = $stmt->fetch();
-        return $row ? $this->toEvent($row) : null;
+        return $row ? $this->hydrateEventDistanceRoutes($this->toEvent($row)) : null;
     }
 
     /**
@@ -92,7 +92,151 @@ class EventService
         $stmt = $this->db->prepare('SELECT * FROM events WHERE slug = :slug LIMIT 1');
         $stmt->execute([':slug' => $slug]);
         $row = $stmt->fetch();
-        return $row ? $this->toEvent($row) : null;
+        return $row ? $this->hydrateEventDistanceRoutes($this->toEvent($row)) : null;
+    }
+
+    /**
+     * @return list<array{id: string, label: string, routeImage: ?string, sortOrder: int}>
+     */
+    public function fetchDistanceRoutes(string $eventId): array
+    {
+        try {
+            $st = $this->db->prepare(
+                'SELECT id, label, route_image, sort_order
+                 FROM event_distance_routes
+                 WHERE event_id = :eid
+                 ORDER BY sort_order ASC, label ASC'
+            );
+            $st->execute([':eid' => $eventId]);
+        } catch (Throwable) {
+            return [];
+        }
+        $out = [];
+        foreach ($st->fetchAll() as $row) {
+            $out[] = [
+                'id'         => (string) $row['id'],
+                'label'      => (string) $row['label'],
+                'routeImage' => $this->sanitiseRouteImageForDisplay($row['route_image'] ?? null),
+                'sortOrder'  => (int) ($row['sort_order'] ?? 0),
+            ];
+        }
+        return $out;
+    }
+
+    /**
+     * Replace all distance route rows and sync the legacy `events.distance` text (comma‑separated labels).
+     *
+     * @param list<array{label: string, routeImage: string|null}> $routes
+     */
+    public function replaceEventDistanceRoutes(string $eventId, array $routes): void
+    {
+        $prev = $this->fetchDistanceRoutes($eventId);
+        $prevPaths = [];
+        foreach ($prev as $p) {
+            if (!empty($p['routeImage'])) {
+                $prevPaths[] = $p['routeImage'];
+            }
+        }
+
+        $this->db->beginTransaction();
+        try {
+            $this->db->prepare('DELETE FROM event_distance_routes WHERE event_id = :eid')
+                ->execute([':eid' => $eventId]);
+            $sort   = 0;
+            $labels = [];
+            foreach ($routes as $r) {
+                $label = trim((string) ($r['label'] ?? ''));
+                if ($label === '') {
+                    continue;
+                }
+                $labels[] = $label;
+                $img = $r['routeImage'] ?? null;
+                $img = (is_string($img) && $img !== '') ? $this->sanitiseRouteImageForStorage($img) : null;
+                $rid = $this->newUuidV4();
+                $this->db->prepare(
+                    'INSERT INTO event_distance_routes (id, event_id, label, route_image, sort_order)
+                     VALUES (:id, :eid, :label, :img, :so)'
+                )->execute([
+                    ':id'    => $rid,
+                    ':eid'   => $eventId,
+                    ':label' => $label,
+                    ':img'   => $img,
+                    ':so'    => $sort++,
+                ]);
+            }
+            $summary = $labels !== [] ? implode(', ', $labels) : '';
+            $this->db->prepare('UPDATE events SET distance = :d, updated_at = UTC_TIMESTAMP() WHERE id = :eid')
+                ->execute([':d' => $summary, ':eid' => $eventId]);
+            $this->db->commit();
+        } catch (Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+
+        $newPaths = [];
+        foreach ($routes as $r) {
+            $img = (is_string($r['routeImage'] ?? null) && $r['routeImage'] !== '')
+                ? $this->sanitiseRouteImageForStorage($r['routeImage']) : null;
+            if ($img) {
+                $newPaths[] = $img;
+            }
+        }
+        $newPaths = array_unique($newPaths);
+        foreach ($prevPaths as $old) {
+            if ($old && str_starts_with($old, '/images/event-routes/') && !in_array($old, $newPaths, true)) {
+                $full = $this->publicWebRoot() . '/' . ltrim($old, '/\\');
+                if (is_file($full)) {
+                    @unlink($full);
+                }
+            }
+        }
+    }
+
+    private function hydrateEventDistanceRoutes(array $event): array
+    {
+        $event['distanceRoutes'] = $this->fetchDistanceRoutes($event['id']);
+        if (!empty($event['distanceRoutes'])) {
+            $event['distance'] = implode(
+                ', ',
+                array_map(static fn (array $r): string => $r['label'], $event['distanceRoutes'])
+            );
+        }
+        return $event;
+    }
+
+    private function newUuidV4(): string
+    {
+        $b = random_bytes(16);
+        $b[6] = chr(ord($b[6]) & 0x0f | 0x40);
+        $b[8] = chr(ord($b[8]) & 0x3f | 0x80);
+        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($b), 4));
+    }
+
+    private function publicWebRoot(): string
+    {
+        if (defined('PUBLIC_ROOT')) {
+            return rtrim((string) PUBLIC_ROOT, '/\\');
+        }
+        return dirname(__DIR__, 2);
+    }
+
+    /** Like banner: relative /path or http(s) URL. */
+    private function sanitiseRouteImageForStorage(mixed $url): ?string
+    {
+        $v = trim((string) ($url ?? ''));
+        if ($v === '') {
+            return null;
+        }
+        if (str_starts_with($v, '/') && !str_contains($v, '//')) {
+            return $v;
+        }
+        $scheme = strtolower((string) (parse_url($v, PHP_URL_SCHEME) ?? ''));
+        return in_array($scheme, ['http', 'https'], true) ? $v : null;
+    }
+
+    private function sanitiseRouteImageForDisplay(mixed $url): ?string
+    {
+        return $this->sanitiseRouteImageForStorage($url);
     }
 
     /**
@@ -193,6 +337,7 @@ class EventService
             $data['registrationClose'] ?? null
         );
         $this->validateBannerUrl($data['bannerImage'] ?? null);
+        $this->validateBrochureUrl($data['brochurePdf'] ?? null);
 
         $slug = ($data['slug'] ?? '') !== ''
             ? trim((string)$data['slug'])
@@ -218,12 +363,12 @@ class EventService
               (title, slug, description, location, event_date, distance,
                recurrence_type, recurrence_days,
                category, registration_open, registration_close, registration_type,
-               registration_link, banner_image, created_by)
+               registration_link, banner_image, brochure_pdf, created_by)
             VALUES
               (:title, :slug, :description, :location, :event_date, :distance,
                :recurrence_type, :recurrence_days,
                :category, :registration_open, :registration_close, :registration_type,
-               :registration_link, :banner_image, :created_by)
+               :registration_link, :banner_image, :brochure_pdf, :created_by)
         ';
 
         $this->db->beginTransaction();
@@ -244,6 +389,7 @@ class EventService
                 ':registration_type'  => $data['registrationType']  ?? 'open',
                 ':registration_link'  => $data['registrationLink']  ?? null,
                 ':banner_image'       => $data['bannerImage']       ?? null,
+                ':brochure_pdf'       => $this->sanitiseBrochureUrl($data['brochurePdf'] ?? null),
                 ':created_by'         => $data['createdBy']         ?? null,
             ]);
 
@@ -278,6 +424,9 @@ class EventService
         if (array_key_exists('bannerImage', $data)) {
             $this->validateBannerUrl($data['bannerImage']);
         }
+        if (array_key_exists('brochurePdf', $data)) {
+            $this->validateBrochureUrl($data['brochurePdf'] ?? null);
+        }
 
         if (isset($data['slug'])) {
             $existing = $this->getEventBySlug($data['slug']);
@@ -302,6 +451,7 @@ class EventService
             'registrationType'  => 'registration_type',
             'registrationLink'  => 'registration_link',
             'bannerImage'      => 'banner_image',
+            'brochurePdf'     => 'brochure_pdf',
             'createdBy'       => 'created_by',
         ];
 
@@ -312,9 +462,13 @@ class EventService
             if (!array_key_exists($camel, $data)) continue;
             $placeholder = ':' . $camel;
             $sets[]      = $snake . ' = ' . $placeholder;
-            $value       = in_array($camel, ['eventDate', 'registrationOpen', 'registrationClose'], true)
-                ? $this->normaliseDatetime($data[$camel])
-                : $data[$camel];
+            if (in_array($camel, ['eventDate', 'registrationOpen', 'registrationClose'], true)) {
+                $value = $this->normaliseDatetime($data[$camel]);
+            } elseif ($camel === 'brochurePdf') {
+                $value = $this->sanitiseBrochureUrl($data[$camel] ?? null);
+            } else {
+                $value = $data[$camel];
+            }
             $params[$placeholder] = $value;
         }
 
@@ -327,7 +481,7 @@ class EventService
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
 
-        return $stmt->rowCount() > 0 ? $this->getEventById($id) : null;
+        return $this->getEventById($id);
     }
 
     /**
@@ -335,6 +489,15 @@ class EventService
      */
     public function deleteEvent(string $id): void
     {
+        foreach ($this->fetchDistanceRoutes($id) as $r) {
+            $p = $r['routeImage'] ?? null;
+            if (is_string($p) && str_starts_with($p, '/images/event-routes/')) {
+                $full = $this->publicWebRoot() . '/' . ltrim($p, '/\\');
+                if (is_file($full)) {
+                    @unlink($full);
+                }
+            }
+        }
         $stmt = $this->db->prepare('DELETE FROM events WHERE id = :id');
         $stmt->execute([':id' => $id]);
     }
@@ -367,6 +530,7 @@ class EventService
             'registrationType'  => $row['registration_type']   ?? 'open',
             'registrationLink'  => $row['registration_link']   ?? null,
             'bannerImage'       => $this->sanitiseBannerUrl($row['banner_image'] ?? null),
+            'brochurePdf'      => $this->sanitiseBrochureUrl($row['brochure_pdf'] ?? null),
             'featureOnHome'     => (bool)($row['feature_on_home'] ?? 0),
             'createdBy'         => $row['created_by']         ?? null,
             'createdAt'         => $row['created_at'],
@@ -389,6 +553,12 @@ class EventService
         return in_array($scheme, ['http', 'https'], true) ? $v : null;
     }
 
+    /** Brochure PDF path/URL: same rules as banner image. */
+    private function sanitiseBrochureUrl(mixed $url): ?string
+    {
+        return $this->sanitiseBannerUrl($url);
+    }
+
     /**
      * Validate banner image URL: empty is fine; non-empty must be relative or http(s).
      *
@@ -402,6 +572,17 @@ class EventService
         $scheme = strtolower(parse_url($v, PHP_URL_SCHEME) ?? '');
         if (!in_array($scheme, ['http', 'https'], true)) {
             throw $this->codeException('Banner image must be an http or https URL.', self::INVALID_BANNER_URL_CODE);
+        }
+    }
+
+    private function validateBrochureUrl(mixed $url): void
+    {
+        $v = trim((string)($url ?? ''));
+        if ($v === '') return;
+        if (str_starts_with($v, '/') && !str_contains($v, '//')) return;
+        $scheme = strtolower(parse_url($v, PHP_URL_SCHEME) ?? '');
+        if (!in_array($scheme, ['http', 'https'], true)) {
+            throw $this->codeException('Event brochure must be a site path (starting with /) or an http(s) URL.', self::INVALID_BANNER_URL_CODE);
         }
     }
 

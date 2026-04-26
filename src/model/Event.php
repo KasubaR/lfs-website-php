@@ -7,7 +7,7 @@
  * Data layer: src/services/EventService.php
  *
  * Event fields (camelCase in app / snake_case in DB):
- *   id, title, description, location, eventDate, distance,
+ *   id, title, description, location, eventDate, distance, distanceRoutes (from DB),
  *   category, registrationOpen, registrationClose, bannerImage, featureOnHome,
  *   series, createdBy, createdAt, updatedAt
  */

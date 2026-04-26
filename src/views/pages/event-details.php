@@ -36,6 +36,14 @@ $dateStr   = $eDate ? $eDate->format('l, j F Y') : 'TBA';   // e.g. "Saturday, 1
 $dayNum    = $eDate ? $eDate->format('j')         : '--';
 $monthAbbr = $eDate ? $eDate->format('M')         : '---';
 $yearNum   = $eDate ? $eDate->format('Y')          : '';
+
+$brochureRaw = $ev['brochurePdf'] ?? '';
+$brochureHref = '';
+if (is_string($brochureRaw) && $brochureRaw !== '') {
+  $brochureHref = (str_starts_with($brochureRaw, 'http://') || str_starts_with($brochureRaw, 'https://'))
+    ? $brochureRaw
+    : lfs_public_url($brochureRaw);
+}
 ?>
 
 
@@ -137,6 +145,13 @@ $yearNum   = $eDate ? $eDate->format('Y')          : '';
           <a href="/events" class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,0.4)">
             <i class="fas fa-arrow-left" aria-hidden="true"></i> All Events
           </a>
+          <?php if ($brochureHref !== ''): ?>
+          <a href="<?= htmlspecialchars($brochureHref, ENT_QUOTES, 'UTF-8') ?>"
+            class="btn btn-outline event-detail-brochure-cta"
+            target="_blank" rel="noopener noreferrer">
+            <i class="fas fa-file-pdf" aria-hidden="true"></i> Event brochure
+          </a>
+          <?php endif; ?>
         </div>
 
       </div>
@@ -203,6 +218,20 @@ $yearNum   = $eDate ? $eDate->format('Y')          : '';
       <div>
         <div class="event-detail-strip__label">Entry Fee</div>
         <div class="event-detail-strip__value"><?= htmlspecialchars($ev['entryFee']) ?></div>
+      </div>
+    </div>
+    <?php endif; ?>
+
+    <?php if ($brochureHref !== ''): ?>
+    <div class="event-detail-strip__item">
+      <i class="fas fa-file-pdf event-detail-strip__icon" aria-hidden="true"></i>
+      <div>
+        <div class="event-detail-strip__label">Brochure</div>
+        <div class="event-detail-strip__value">
+          <a href="<?= htmlspecialchars($brochureHref, ENT_QUOTES, 'UTF-8') ?>"
+            class="event-detail-brochure-link"
+            target="_blank" rel="noopener noreferrer">Download PDF</a>
+        </div>
       </div>
     </div>
     <?php endif; ?>
@@ -308,8 +337,38 @@ $yearNum   = $eDate ? $eDate->format('Y')          : '';
         </dl>
       </div>
 
-      <!-- Route Info -->
-      <?php if (!empty($ev['terrain']) || !empty($ev['difficulty'])): ?>
+      <!-- Distance route maps (per distance, from admin) -->
+      <?php if (!empty($ev['distanceRoutes']) && is_array($ev['distanceRoutes'])): ?>
+      <div class="event-detail-section" data-reveal>
+        <span class="section-label"><i class="fas fa-map-location-dot" aria-hidden="true"></i> Route maps</span>
+        <h2 class="font-['Bebas_Neue'] text-4xl mt-1 mb-4">Distance routes</h2>
+        <div class="event-detail-routes">
+          <?php foreach ($ev['distanceRoutes'] as $dr):
+            $dLabel = (string) ($dr['label'] ?? '');
+            $dImg   = (string) ($dr['routeImage'] ?? '');
+            ?>
+            <figure class="event-detail-route">
+              <figcaption class="event-detail-route__label"><?= htmlspecialchars($dLabel) ?></figcaption>
+              <?php if ($dImg !== ''): ?>
+              <div class="event-detail-route__img-wrap">
+                <img
+                  src="<?= htmlspecialchars(lfs_public_url($dImg), ENT_QUOTES, 'UTF-8') ?>"
+                  alt="Route: <?= htmlspecialchars($dLabel) ?>"
+                  class="event-detail-route__img"
+                  loading="lazy"
+                />
+              </div>
+              <?php else: ?>
+              <p class="event-detail-route__no-img text-sm text-[#6b7280]">Route image will be added soon.</p>
+              <?php endif; ?>
+            </figure>
+          <?php endforeach; ?>
+        </div>
+      </div>
+      <?php endif; ?>
+
+      <!-- Route Info (terrain, difficulty) -->
+      <?php if (!empty($ev['terrain']) || !empty($ev['difficulty']) || !empty($ev['routeDescription'])): ?>
       <div class="event-detail-section" data-reveal>
         <span class="section-label"><i class="fas fa-map" aria-hidden="true"></i> Route</span>
         <h2 class="font-['Bebas_Neue'] text-4xl mt-1 mb-4">Route Information</h2>
@@ -327,7 +386,7 @@ $yearNum   = $eDate ? $eDate->format('Y')          : '';
             <span><strong>Difficulty:</strong> <?= htmlspecialchars($ev['difficulty']) ?></span>
           </div>
           <?php endif; ?>
-          <?php if (!empty($ev['distance'])): ?>
+          <?php if (!empty($ev['distance']) && empty($ev['distanceRoutes'])): ?>
           <div class="event-detail-route-tag">
             <i class="fas fa-route" aria-hidden="true"></i>
             <span><strong>Distance:</strong> <?= htmlspecialchars($ev['distance']) ?></span>
@@ -339,6 +398,7 @@ $yearNum   = $eDate ? $eDate->format('Y')          : '';
         <p class="mt-4 text-sm text-[#6b7280] leading-relaxed"><?= htmlspecialchars($ev['routeDescription']) ?></p>
         <?php endif; ?>
 
+        <?php if (empty($ev['distanceRoutes'])): ?>
         <div class="event-detail-map-placeholder mt-5" aria-hidden="true">
           <i class="fas fa-map-location-dot"></i>
           <span>Interactive map coming soon</span>
@@ -346,6 +406,7 @@ $yearNum   = $eDate ? $eDate->format('Y')          : '';
             <i class="fas fa-download" aria-hidden="true"></i> Request GPX File
           </a>
         </div>
+        <?php endif; ?>
       </div>
       <?php endif; ?>
 

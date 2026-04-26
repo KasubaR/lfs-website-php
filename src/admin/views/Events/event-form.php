@@ -8,7 +8,7 @@
  *   $breadcrumbs     array
  *   $event           null (create) or array {
  *                      id, title, slug, description, location,
- *                      eventDate, distance, category, recurrenceType, recurrenceDays,
+ *                      eventDate, distance, distanceRoutes, category, recurrenceType, recurrenceDays,
  *                      registrationOpen, registrationClose, bannerImage, featureOnHome
  *                    }
  *   $eventCategories array of category strings
@@ -19,6 +19,31 @@
 
 $isEdit = $isEdit ?? ($event !== null);
 $ev     = $event  ?? [];
+
+$distRows = [];
+if (isset($_POST['dist_label']) && is_array($_POST['dist_label'])) {
+    $ex = $_POST['dist_route_existing'] ?? [];
+    if (!is_array($ex)) {
+        $ex = [];
+    }
+    foreach ($_POST['dist_label'] as $i => $lbl) {
+        $p = (string) ($ex[$i] ?? '');
+        $distRows[] = [
+            'label'      => (string) $lbl,
+            'routeImage' => $p !== '' ? $p : null,
+        ];
+    }
+} elseif (!empty($ev['distanceRoutes']) && is_array($ev['distanceRoutes'])) {
+    foreach ($ev['distanceRoutes'] as $dr) {
+        $distRows[] = [
+            'label'      => (string) ($dr['label'] ?? ''),
+            'routeImage' => $dr['routeImage'] ?? null,
+        ];
+    }
+}
+if ($distRows === []) {
+    $distRows[] = ['label' => '', 'routeImage' => null];
+}
 
 $pageTitle  = $pageTitle  ?? ($isEdit ? 'Edit Event' : 'New Event');
 $activePage = 'events';
@@ -147,13 +172,48 @@ function toDateTimeLocal(?string $d): string {
       </small>
     </div>
 
-    <!-- Distance -->
-    <div class="form-group" style="margin-bottom:1.25rem;">
-      <label class="form-label" for="distance">Distance</label>
-      <input type="text" id="distance" name="distance"
-             value="<?= htmlspecialchars($ev['distance'] ?? '') ?>"
-             placeholder="e.g. 10K, 21.1K, 18K"
-             style="width:100%; padding:0.6rem 0.85rem; background:var(--black-soft); border:1px solid var(--border-mid); border-radius:8px; color:var(--off-white); font-family:var(--font-body); font-size:0.9rem;" />
+    <!-- Distances (one row per option + optional route map image) -->
+    <div class="form-group event-form__distances-wrap" style="margin-bottom:1.25rem;">
+      <span class="form-label">Distances &amp; route maps</span>
+      <p class="event-form__distances-hint" style="font-size:0.8rem; color:var(--text-dim); margin:0.35rem 0 0.75rem;">
+        Add each distance on its own row (e.g. 10K, 21.1K). Upload a route image per distance; images appear on the public event page.
+      </p>
+      <ul class="event-form__distances" id="lfsDistanceRows" style="list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:1rem;">
+        <?php foreach ($distRows as $dr):
+          $drLabel = $dr['label'] ?? '';
+          $drImg   = $dr['routeImage'] ?? null;
+        ?>
+        <li class="event-form__distance-row" data-distance-row>
+          <div style="display:grid; gap:0.5rem; grid-template-columns:1fr; max-width:100%;">
+            <label>
+              <span class="form-label" style="display:block; margin-bottom:0.3rem; font-size:0.78rem; color:var(--text-dim);">Distance label</span>
+              <input type="text" name="dist_label[]" value="<?= htmlspecialchars($drLabel) ?>"
+                placeholder="e.g. 10K"
+                class="admin-input" style="width:100%;" />
+            </label>
+            <input type="hidden" name="dist_route_existing[]" value="<?= htmlspecialchars((string) ($drImg ?? ''), ENT_QUOTES, 'UTF-8') ?>" />
+            <label>
+              <span class="form-label" style="display:block; margin-bottom:0.3rem; font-size:0.78rem; color:var(--text-dim);">Route image</span>
+              <input type="file" name="dist_route_file[]" accept="image/jpeg,image/png,image/webp" class="event-form__file" />
+            </label>
+            <?php if (is_string($drImg) && $drImg !== ''): ?>
+            <div class="event-form__distance-preview" style="font-size:0.8rem; color:var(--text-dim);">
+              Current file:
+              <a href="<?= htmlspecialchars(function_exists('lfs_public_url') ? lfs_public_url((string) $drImg) : (string) $drImg, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener">View image</a>
+            </div>
+            <?php endif; ?>
+            <div style="display:flex; justify-content:flex-end;">
+              <button type="button" class="lfsRemoveDistance admin-btn-ghost" style="font-size:0.8rem; padding:0.35rem 0.6rem; border:1px solid var(--border-mid); border-radius:6px; background:transparent; color:var(--text-dim); cursor:pointer;">
+                Remove row
+              </button>
+            </div>
+          </div>
+        </li>
+        <?php endforeach; ?>
+      </ul>
+      <button type="button" id="lfsAddDistance" style="margin-top:0.75rem; font-size:0.85rem; padding:0.45rem 0.9rem; border-radius:8px; border:1px dashed var(--border-mid); background:var(--black-soft); color:var(--green-bright); cursor:pointer;">
+        + Add distance
+      </button>
     </div>
 
     <script>
@@ -282,6 +342,39 @@ function toDateTimeLocal(?string $d): string {
           <span>Feature on home page hero (banner + title shown on the hero; multiple events allowed—their slides and labels rotate first, then gallery images; requires a banner and an upcoming event date)</span>
         </label>
       </div>
+    </div>
+
+    <!-- Event brochure (PDF) -->
+    <div class="form-group event-form__brochure-group" style="margin-bottom:1.25rem;">
+      <span class="form-label">Event brochure (PDF)</span>
+      <p class="event-form__brochure-hint" style="font-size:0.8rem; color:var(--text-dim); margin:0.35rem 0 0.75rem;">
+        Optional file visitors can download on the public event page. You can upload a PDF or paste a direct link. Max 25 MB.
+      </p>
+      <?php if ($isEdit && !empty($ev['brochurePdf'])):
+        $brochurePreview = (string) $ev['brochurePdf'];
+        $brochurePreviewHref = (str_starts_with($brochurePreview, 'http://') || str_starts_with($brochurePreview, 'https://'))
+          ? $brochurePreview
+          : (function_exists('lfs_public_url') ? lfs_public_url($brochurePreview) : $brochurePreview);
+      ?>
+      <p style="font-size:0.85rem; color:var(--text-dim); margin:0 0 0.5rem;">
+        Current:
+        <a href="<?= htmlspecialchars($brochurePreviewHref, ENT_QUOTES, 'UTF-8') ?>"
+           target="_blank" rel="noopener" class="event-form__brochure-current">Open brochure</a>
+      </p>
+      <label style="display:flex; align-items:flex-start; gap:0.55rem; cursor:pointer; font-size:0.9rem; color:var(--off-white); line-height:1.4; margin-bottom:0.75rem;">
+        <input type="checkbox" name="remove_brochure" value="1" style="margin-top:0.2rem; flex-shrink:0;" />
+        <span>Remove brochure (no download on the public page)</span>
+      </label>
+      <?php endif; ?>
+      <label class="form-label" for="brochurePdfFile">Upload PDF</label>
+      <input type="file" id="brochurePdfFile" name="brochurePdfFile" accept="application/pdf,.pdf" class="event-form__file" />
+      <label class="form-label" for="brochurePdf" style="margin-top:0.75rem;">Or brochure URL / path</label>
+      <input type="text" id="brochurePdf" name="brochurePdf" class="admin-input"
+        value="<?= htmlspecialchars($ev['brochurePdf'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+        placeholder="https://… or /files/…" />
+      <small style="display:block; margin-top:0.35rem; color:var(--text-dim); font-size:0.8rem;">
+        Leave empty to keep the current brochure when editing. A new upload replaces the stored file.
+      </small>
     </div>
 
     <!-- Actions -->

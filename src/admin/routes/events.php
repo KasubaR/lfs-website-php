@@ -21,6 +21,8 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../controllers/EventController.php';
 require_once __DIR__ . '/../middleware/EventBannerUpload.php';
+require_once __DIR__ . '/../middleware/EventDistanceRouteUpload.php';
+require_once __DIR__ . '/../middleware/EventBrochureUpload.php';
 require_once __DIR__ . '/../../middleware/CsrfMiddleware.php';
 
 $controller = new EventController();
@@ -50,7 +52,9 @@ if ($method === 'GET' && $seg0 === 'create') {
 
 // ── POST /admin/events  (create) ─────────────────────────────
 if ($method === 'POST' && $seg0 === '') {
-    EventBannerUpload::handle();   // sets _bannerUploadError on failure
+    EventBannerUpload::handle();        // sets _bannerUploadError on failure
+    EventDistanceRouteUpload::handle();  // dist_route_stored[]; _distanceRouteUploadError on failure
+    EventBrochureUpload::handle();   // sets brochure_pdf_stored; _brochureUploadError on failure
     CsrfMiddleware::verify();      // aborts with 403 on token mismatch
     $controller->postCreateEvent();
     exit;
@@ -72,6 +76,8 @@ if ($method === 'POST' && $seg1 === 'delete' && $seg0 !== '') {
 // ── POST /admin/events/:id  (update) ─────────────────────────
 if ($method === 'POST' && $seg0 !== '' && $seg1 === '') {
     EventBannerUpload::handle();
+    EventDistanceRouteUpload::handle();
+    EventBrochureUpload::handle();
     CsrfMiddleware::verify();
     $controller->postUpdateEvent($seg0);
     exit;
