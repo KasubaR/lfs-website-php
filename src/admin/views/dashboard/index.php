@@ -89,7 +89,7 @@ $breadcrumbs = [];
   <a href="/admin/products/create" class="btn-quick btn-quick--outline">
     <i class="fas fa-plus" aria-hidden="true"></i> Add Product
   </a>
-  <a href="/admin/blog/new"        class="btn-quick btn-quick--outline">
+  <a href="/admin/blog/create"     class="btn-quick btn-quick--outline">
     <i class="fas fa-plus" aria-hidden="true"></i> Add Blog
   </a>
   <a href="/admin/gallery/upload"  class="btn-quick btn-quick--outline">

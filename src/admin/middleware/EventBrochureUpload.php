@@ -8,7 +8,7 @@ declare(strict_types=1);
 
 class EventBrochureUpload
 {
-    private const MAX_BYTES    = 25 * 1024 * 1024;
+    private const MAX_BYTES    = 50 * 1024 * 1024;
     private const FIELD        = 'brochurePdfFile';
     private const ALLOWED_MIME = ['application/pdf', 'application/x-pdf'];
     private const ALLOWED_EXT  = ['pdf'];
@@ -34,7 +34,7 @@ class EventBrochureUpload
             return;
         }
         if ($file['size'] > self::MAX_BYTES) {
-            self::setError('Brochure PDF must be 25 MB or less.');
+            self::setError('Brochure PDF must be 50 MB or less.');
             @unlink($file['tmp_name']);
             return;
         }

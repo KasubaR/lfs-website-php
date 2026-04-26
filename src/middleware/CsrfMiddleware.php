@@ -81,8 +81,84 @@ class CsrfMiddleware
         $submitted    = $_POST[self::FORM_FIELD] ?? $_SERVER[self::HEADER_NAME] ?? '';
 
         if ($sessionToken === '' || $submitted === '' || !hash_equals($sessionToken, $submitted)) {
+            if (self::probablyPostBodyTooLarge()) {
+                self::abortPostTooLarge();
+                return;
+            }
             self::abort();
         }
+    }
+
+    /**
+     * When POST body exceeds post_max_size, PHP empties $_POST and $_FILES so the
+     * CSRF field never arrives — the failure looks like a missing token.
+     */
+    private static function probablyPostBodyTooLarge(): bool
+    {
+        if (strtoupper($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+            return false;
+        }
+        if (!empty($_POST)) {
+            return false;
+        }
+        $contentLength = (int) ($_SERVER['CONTENT_LENGTH'] ?? 0);
+        if ($contentLength <= 0) {
+            return false;
+        }
+        $maxBytes = self::iniSizeToBytes(ini_get('post_max_size') ?: '0');
+        return $maxBytes > 0 && $contentLength > $maxBytes;
+    }
+
+    private static function iniSizeToBytes(string $val): int
+    {
+        $val = trim($val);
+        if ($val === '') {
+            return 0;
+        }
+        $u = strtolower(substr($val, -1));
+        $n = (float) $val;
+        return (int) match ($u) {
+            'g'     => $n * 1024 * 1024 * 1024,
+            'm'     => $n * 1024 * 1024,
+            'k'     => $n * 1024,
+            default => $n,
+        };
+    }
+
+    private static function abortPostTooLarge(): void
+    {
+        $postMax   = ini_get('post_max_size') ?: 'unknown';
+        $uploadMax = ini_get('upload_max_filesize') ?: 'unknown';
+
+        $accept     = $_SERVER['HTTP_ACCEPT']           ?? '';
+        $xRequested = $_SERVER['HTTP_X_REQUESTED_WITH'] ?? '';
+        $isJson     = str_contains($accept, 'application/json')
+            || strtolower($xRequested) === 'xmlhttprequest';
+
+        if ($isJson) {
+            http_response_code(413);
+            header('Content-Type: application/json');
+            echo json_encode([
+                'ok'      => false,
+                'message' => "Form upload too large for server limits (post_max_size={$postMax}).",
+            ], JSON_UNESCAPED_SLASHES);
+            exit;
+        }
+
+        $title   = 'Request too large';
+        $status  = 413;
+        $message = "The file(s) and form data together exceed the server's maximum POST size (post_max_size is {$postMax}; per-file limit is upload_max_filesize={$uploadMax}). "
+            . "Reduce file sizes, or in php.ini (or this site's .htaccess if using Apache mod_php) increase post_max_size to be larger than your largest upload, and set upload_max_filesize accordingly. "
+            . 'After changing php.ini, restart Apache.';
+
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+        ob_start();
+        require __DIR__ . '/../../src/views/pages/error.php';
+        $content = ob_get_clean();
+        require __DIR__ . '/../../src/views/layouts/main.php';
+        exit;
     }
 
     /* ════════════════════════════════════════════════════════════

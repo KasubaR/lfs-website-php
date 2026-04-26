@@ -348,7 +348,7 @@ function toDateTimeLocal(?string $d): string {
     <div class="form-group event-form__brochure-group" style="margin-bottom:1.25rem;">
       <span class="form-label">Event brochure (PDF)</span>
       <p class="event-form__brochure-hint" style="font-size:0.8rem; color:var(--text-dim); margin:0.35rem 0 0.75rem;">
-        Optional file visitors can download on the public event page. You can upload a PDF or paste a direct link. Max 25 MB.
+        Optional file visitors can download on the public event page. You can upload a PDF or paste a direct link. Max 50 MB.
       </p>
       <?php if ($isEdit && !empty($ev['brochurePdf'])):
         $brochurePreview = (string) $ev['brochurePdf'];

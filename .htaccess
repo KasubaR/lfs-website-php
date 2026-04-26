@@ -1,5 +1,14 @@
 RewriteEngine On
 
+# Event forms upload banners, distance route images, and PDF brochures. Default PHP
+# limits (e.g. post_max_size=8M) drop the whole POST when exceeded — no CSRF field,
+# so uploads fail with a misleading "invalid CSRF" error. See CsrfMiddleware.
+# (Ignored if not using Apache with libphp; for nginx/php-fpm set pool/php.ini. XAMPP uses e.g. php_module.)
+<IfModule php_module>
+  php_value upload_max_filesize 50M
+  php_value post_max_size 64M
+</IfModule>
+
 # Block direct HTTP access to .env when it lives under the web root
 <Files ".env">
     Require all denied
