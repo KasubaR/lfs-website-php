@@ -27,7 +27,8 @@
 
 .home-hero__featured-panels {
   position: relative;
-  min-height: 4.5rem;
+  /* Must clear headline + meta + CTA (panels are stacked absolutely) */
+  min-height: clamp(12rem, 36vw, 24rem);
 }
 
 .home-hero__featured {
@@ -51,8 +52,21 @@
   z-index: 1;
 }
 
-.home-hero__content .home-hero__featured-wrap + h1 {
-  margin-top: 0.75rem;
+/* Match #heroGenericContent stagger (kicker, headline, body, CTA) */
+.home-hero__featured-kicker.animate-fadeUp {
+  animation-delay: 0.05s;
+}
+
+.home-hero__featured-title.animate-fadeUp {
+  animation-delay: 0.15s;
+}
+
+.home-hero__featured-date.animate-fadeUp {
+  animation-delay: 0.3s;
+}
+
+.home-hero__featured-actions.animate-fadeUp {
+  animation-delay: 0.45s;
 }
 
 .home-hero__featured-kicker {
@@ -61,25 +75,7 @@
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--green-bright);
-  margin: 0 0 0.5rem;
-}
-
-.home-hero__featured-title {
-  font-family: var(--font-display);
-  font-size: clamp(1.5rem, 3.5vw, 2.25rem);
-  line-height: 1.2;
-  letter-spacing: 0.03em;
-  color: #fff;
   margin: 0;
-}
-
-.home-hero__featured-date {
-  display: block;
-  margin-top: 0.35rem;
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.85);
-  letter-spacing: 0.02em;
 }
 
 .home-hero__featured-link--block {

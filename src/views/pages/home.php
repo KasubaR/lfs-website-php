@@ -71,7 +71,9 @@ $_heroFeatureCount = count($_feBanners);
         data-hero-featured-count="<?= (int) $_heroFeatureCount ?>"
         aria-label="<?= htmlspecialchars($_kicker, ENT_QUOTES, 'UTF-8') ?>"
         role="group">
-        <p class="home-hero__featured-kicker"><?= htmlspecialchars($_kicker, ENT_QUOTES, 'UTF-8') ?></p>
+        <p class="home-hero__featured-kicker mt-6 mb-2 animate-fadeUp">
+          <?= htmlspecialchars($_kicker, ENT_QUOTES, 'UTF-8') ?>
+        </p>
         <div class="home-hero__featured-panels">
           <?php foreach ($heroFeaturedEvents as $_pi => $_fe):
             $_hfeTitle = trim((string)($_fe['title'] ?? '')) !== '' ? (string) $_fe['title'] : 'Event';
@@ -80,58 +82,74 @@ $_heroFeatureCount = count($_feBanners);
             $_active   = $_pi === 0 ? ' home-hero__featured-panel--active' : '';
           ?>
           <div class="home-hero__featured home-hero__featured-panel<?= $_active ?>" data-featured-panel-index="<?= (int) $_pi ?>">
-            <?php if ($_hfeLink !== ''): ?>
-            <a href="<?= htmlspecialchars($_hfeLink, ENT_QUOTES, 'UTF-8') ?>" class="home-hero__featured-link home-hero__featured-link--block">
-              <span class="home-hero__featured-title"><?= htmlspecialchars($_hfeTitle, ENT_QUOTES, 'UTF-8') ?></span>
-              <?php if ($_hfeDate !== '' && $_hfeDate !== '—'): ?>
-              <span class="home-hero__featured-date"><?= htmlspecialchars($_hfeDate, ENT_QUOTES, 'UTF-8') ?></span>
-              <?php endif; ?>
-            </a>
-            <?php else: ?>
-            <p class="home-hero__featured-title"><?= htmlspecialchars($_hfeTitle, ENT_QUOTES, 'UTF-8') ?></p>
+            <h2 class="home-hero__featured-title font-['Bebas_Neue'] text-5xl sm:text-6xl lg:text-7xl leading-tight text-white mt-0 max-w-4xl animate-fadeUp">
+              <?= htmlspecialchars($_hfeTitle, ENT_QUOTES, 'UTF-8') ?>
+            </h2>
             <?php if ($_hfeDate !== '' && $_hfeDate !== '—'): ?>
-            <p class="home-hero__featured-date"><?= htmlspecialchars($_hfeDate, ENT_QUOTES, 'UTF-8') ?></p>
+            <p class="home-hero__featured-date mt-5 text-white text-base font-light leading-relaxed max-w-xl animate-fadeUp">
+              <?= htmlspecialchars($_hfeDate, ENT_QUOTES, 'UTF-8') ?>
+            </p>
             <?php endif; ?>
+            <div class="home-hero__featured-actions flex flex-wrap items-center gap-4 mt-6 animate-fadeUp">
+            <?php if ($_hfeLink !== ''): ?>
+              <a href="<?= htmlspecialchars($_hfeLink, ENT_QUOTES, 'UTF-8') ?>" class="btn btn-primary">
+                View Event Details
+                <i class="fas fa-arrow-right" aria-hidden="true"></i>
+              </a>
+              <a href="/events" class="btn btn-outline">
+                All events
+                <i class="fas fa-arrow-right" aria-hidden="true"></i>
+              </a>
+            <?php else: ?>
+              <a href="/events" class="btn btn-primary">
+                All events
+                <i class="fas fa-arrow-right" aria-hidden="true"></i>
+              </a>
             <?php endif; ?>
+            </div>
           </div>
           <?php endforeach; ?>
         </div>
       </div>
       <?php endif; ?>
 
-      <h1 class="font-['Bebas_Neue'] text-5xl sm:text-6xl lg:text-7xl leading-tight text-white mt-6 animate-fadeUp"
-        style="animation-delay:0.15s">
-        Zambia's Biggest<br>
-        Running Community
-      </h1>
+      <div id="heroGenericContent">
+        <h1 class="font-['Bebas_Neue'] text-5xl sm:text-6xl lg:text-7xl leading-tight text-white mt-6 animate-fadeUp"
+          style="animation-delay:0.15s">
+          Zambia's Biggest<br>
+          Running Community
+        </h1>
 
-      <p class="mt-5 text-white text-base font-light leading-relaxed max-w-xl animate-fadeUp"
-        style="animation-delay:0.3s">
-        Train. Run. Compete. Together.&nbsp; LFS is a vibrant squad of runners, dreamers and doers
-        pushing each other forward, every single stride, across six satellites in Lusaka.
-      </p>
+        <p class="mt-5 text-white text-base font-light leading-relaxed max-w-xl animate-fadeUp"
+          style="animation-delay:0.3s">
+          Train. Run. Compete. Together.&nbsp; LFS is a vibrant squad of runners, dreamers and doers
+          pushing each other forward, every single stride, across six satellites in Lusaka.
+        </p>
 
-      <div class="flex flex-wrap gap-4 mt-6 animate-fadeUp" style="animation-delay:0.45s">
-        <a href="https://squidal.com/lfsmembership" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
-          Join LFS
-        </a>
-        <a href="/shop" class="btn btn-outline">
-          Shop
-        </a>
-      </div>
-
-      <div class="stat-row animate-fadeUp mt-6" style="animation-delay:0.6s" aria-label="LFS at a glance">
-        <div class="stat-item">
-          <div class="stat-item__num" data-count="6" data-suffix="">6</div>
-          <div class="stat-item__label">Satellites</div>
+        <div class="flex flex-wrap items-center gap-4 mt-6 animate-fadeUp" style="animation-delay:0.45s">
+          <a href="https://squidal.com/lfsmembership" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+            Join LFS
+            <i class="fas fa-arrow-right" aria-hidden="true"></i>
+          </a>
+          <a href="/shop" class="btn btn-outline">
+            Shop
+            <i class="fas fa-arrow-right" aria-hidden="true"></i>
+          </a>
         </div>
-        <div class="stat-item">
-          <div class="stat-item__num" data-count="7" data-suffix="+">7+</div>
-          <div class="stat-item__label">Years Running</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-item__num" data-count="52" data-suffix="">52</div>
-          <div class="stat-item__label">LSDs / Year</div>
+
+        <div class="stat-row animate-fadeUp mt-6" style="animation-delay:0.6s" aria-label="LFS at a glance">
+          <div class="stat-item">
+            <div class="stat-item__num" data-count="6" data-suffix="">6</div>
+            <div class="stat-item__label">Satellites</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-item__num" data-count="7" data-suffix="+">7+</div>
+            <div class="stat-item__label">Years Running</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-item__num" data-count="52" data-suffix="">52</div>
+            <div class="stat-item__label">LSDs / Year</div>
+          </div>
         </div>
       </div>
     </div>
@@ -158,17 +176,21 @@ $_heroFeatureCount = count($_feBanners);
   const wrap = document.querySelector('.home-hero__featured-wrap');
   const featuredCount = wrap ? parseInt(wrap.getAttribute('data-hero-featured-count') || '0', 10) : 0;
   const panels = document.querySelectorAll('.home-hero__featured-panel');
+  const genericContent = document.getElementById('heroGenericContent');
 
   function syncFeaturedPanels(slideIndex) {
-    if (!wrap || featuredCount <= 0) return;
-    if (slideIndex < featuredCount) {
+    const isFeaturedSlide = wrap && featuredCount > 0 && slideIndex < featuredCount;
+
+    if (isFeaturedSlide) {
       wrap.classList.remove('home-hero__featured-wrap--conceal');
       panels.forEach(function (p) {
         var pi = parseInt(p.getAttribute('data-featured-panel-index') || '0', 10);
         p.classList.toggle('home-hero__featured-panel--active', pi === slideIndex);
       });
+      if (genericContent) genericContent.style.display = 'none';
     } else {
-      wrap.classList.add('home-hero__featured-wrap--conceal');
+      if (wrap) wrap.classList.add('home-hero__featured-wrap--conceal');
+      if (genericContent) genericContent.style.display = '';
     }
   }
 

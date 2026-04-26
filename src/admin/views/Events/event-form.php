@@ -197,9 +197,16 @@ function toDateTimeLocal(?string $d): string {
               <input type="file" name="dist_route_file[]" accept="image/jpeg,image/png,image/webp" class="event-form__file" />
             </label>
             <?php if (is_string($drImg) && $drImg !== ''): ?>
-            <div class="event-form__distance-preview" style="font-size:0.8rem; color:var(--text-dim);">
-              Current file:
-              <a href="<?= htmlspecialchars(function_exists('lfs_public_url') ? lfs_public_url((string) $drImg) : (string) $drImg, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener">View image</a>
+            <div class="event-form__distance-preview" style="display:flex; align-items:center; gap:0.75rem; padding:0.65rem 0.9rem; background:rgba(74,124,89,0.1); border:1px solid rgba(74,124,89,0.3); border-radius:8px;">
+              <i class="fas fa-image" style="color:var(--green-bright); font-size:1rem; flex-shrink:0;"></i>
+              <span style="font-size:0.82rem; color:var(--off-white); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                Image uploaded: <strong><?= htmlspecialchars(basename((string) $drImg), ENT_QUOTES, 'UTF-8') ?></strong>
+              </span>
+              <a href="<?= htmlspecialchars(function_exists('lfs_public_url') ? lfs_public_url((string) $drImg) : (string) $drImg, ENT_QUOTES, 'UTF-8') ?>"
+                 target="_blank" rel="noopener"
+                 style="font-size:0.8rem; color:var(--green-bright); text-decoration:none; white-space:nowrap; flex-shrink:0;">
+                View &rarr;
+              </a>
             </div>
             <?php endif; ?>
             <div style="display:flex; justify-content:flex-end;">
@@ -310,8 +317,15 @@ function toDateTimeLocal(?string $d): string {
     (function () {
       const radios  = document.querySelectorAll('input[name="registrationType"]');
       const wrap    = document.getElementById('reg_dates_wrap');
+      const regOpen = document.getElementById('registrationOpen');
+      const regClose = document.getElementById('registrationClose');
       function toggle() {
-        wrap.style.display = document.getElementById('reg_none').checked ? 'none' : '';
+        const none = document.getElementById('reg_none').checked;
+        wrap.style.display = none ? 'none' : '';
+        // Hidden inputs can still fail constraint validation; the browser then cannot
+        // focus them ("not focusable"). Disabled fields are skipped by validation and POST.
+        if (regOpen) regOpen.disabled = none;
+        if (regClose) regClose.disabled = none;
       }
       radios.forEach(r => r.addEventListener('change', toggle));
       toggle();
@@ -335,13 +349,46 @@ function toDateTimeLocal(?string $d): string {
              value="<?= htmlspecialchars($ev['bannerImage'] ?? '') ?>"
              placeholder="https://… or /images/…" />
       <div class="form-group" style="margin-top:1rem;">
-        <label style="display:flex; align-items:flex-start; gap:0.55rem; cursor:pointer; font-size:0.9rem; color:var(--off-white); line-height:1.4;">
-          <input type="checkbox" name="featureOnHome" value="1"
+        <label id="featureOnHomeLabel"
+               style="display:flex; align-items:flex-start; gap:0.55rem; cursor:pointer; font-size:0.9rem; color:var(--off-white); line-height:1.4;
+                      padding:0.65rem 0.9rem; border-radius:8px; border:1px solid var(--border-mid); transition:background 0.15s, border-color 0.15s;">
+          <input type="checkbox" name="featureOnHome" value="1" id="featureOnHome"
             <?= !empty($ev['featureOnHome']) ? 'checked' : '' ?>
             style="margin-top:0.2rem; flex-shrink:0;" />
-          <span>Feature on home page hero (banner + title shown on the hero; multiple events allowed—their slides and labels rotate first, then gallery images; requires a banner and an upcoming event date)</span>
+          <span>Feature on home page hero <small style="display:block; color:var(--text-dim); font-size:0.78rem; margin-top:0.2rem;">(banner + title shown on the hero; multiple events allowed—their slides and labels rotate first, then gallery images; requires a banner and an upcoming event date)</small></span>
         </label>
+        <p id="featureOnHomeNoBanner" style="display:none; margin:0.45rem 0 0; font-size:0.82rem; color:#e05252;">
+          <i class="fas fa-triangle-exclamation"></i>
+          A banner image is required to feature this event on the home page. Upload or paste a banner URL above first.
+        </p>
       </div>
+      <script>
+      (function () {
+        var cb    = document.getElementById('featureOnHome');
+        var lbl   = document.getElementById('featureOnHomeLabel');
+        var warn  = document.getElementById('featureOnHomeNoBanner');
+        var fileIn = document.getElementById('bannerImageFile');
+        var urlIn  = document.getElementById('bannerImage');
+
+        function hasBanner() {
+          return (fileIn && fileIn.files && fileIn.files.length > 0) ||
+                 (urlIn  && urlIn.value.trim() !== '') ||
+                 <?= (!empty($ev['bannerImage']) ? 'true' : 'false') ?>;
+        }
+
+        function update() {
+          var checked = cb.checked;
+          lbl.style.background   = checked ? 'rgba(74,124,89,0.12)' : '';
+          lbl.style.borderColor  = checked ? 'rgba(74,124,89,0.5)'  : 'var(--border-mid)';
+          warn.style.display     = (checked && !hasBanner()) ? 'block' : 'none';
+        }
+
+        cb.addEventListener('change', update);
+        if (fileIn) fileIn.addEventListener('change', update);
+        if (urlIn)  urlIn.addEventListener('input',  update);
+        update();
+      }());
+      </script>
     </div>
 
     <!-- Event brochure (PDF) -->
@@ -355,12 +402,19 @@ function toDateTimeLocal(?string $d): string {
         $brochurePreviewHref = (str_starts_with($brochurePreview, 'http://') || str_starts_with($brochurePreview, 'https://'))
           ? $brochurePreview
           : (function_exists('lfs_public_url') ? lfs_public_url($brochurePreview) : $brochurePreview);
+        $brochureFilename = basename($brochurePreview);
       ?>
-      <p style="font-size:0.85rem; color:var(--text-dim); margin:0 0 0.5rem;">
-        Current:
+      <div style="display:flex; align-items:center; gap:0.75rem; padding:0.65rem 0.9rem; margin-bottom:0.85rem; background:rgba(74,124,89,0.1); border:1px solid rgba(74,124,89,0.3); border-radius:8px;">
+        <i class="fas fa-file-pdf" style="color:var(--green-bright); font-size:1rem; flex-shrink:0;"></i>
+        <span style="font-size:0.85rem; color:var(--off-white); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+          PDF uploaded: <strong><?= htmlspecialchars($brochureFilename, ENT_QUOTES, 'UTF-8') ?></strong>
+        </span>
         <a href="<?= htmlspecialchars($brochurePreviewHref, ENT_QUOTES, 'UTF-8') ?>"
-           target="_blank" rel="noopener" class="event-form__brochure-current">Open brochure</a>
-      </p>
+           target="_blank" rel="noopener"
+           style="font-size:0.8rem; color:var(--green-bright); text-decoration:none; white-space:nowrap; flex-shrink:0;">
+          View &rarr;
+        </a>
+      </div>
       <label style="display:flex; align-items:flex-start; gap:0.55rem; cursor:pointer; font-size:0.9rem; color:var(--off-white); line-height:1.4; margin-bottom:0.75rem;">
         <input type="checkbox" name="remove_brochure" value="1" style="margin-top:0.2rem; flex-shrink:0;" />
         <span>Remove brochure (no download on the public page)</span>
