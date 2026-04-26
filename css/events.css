@@ -703,7 +703,7 @@
 .event-detail-hero__content {
   position: relative;
   z-index: 2;
-  padding: 2rem var(--section-px) 3.5rem;
+  padding: calc(var(--nav-height, 70px) + 1.5rem) var(--section-px) 3.5rem;
 }
 
 .event-detail-hero__inner {
@@ -1022,9 +1022,10 @@
   margin: 0;
   padding: 0;
   background: var(--off-white);
-  border: 1px solid rgba(0, 0, 0, 0.07);
+  border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: var(--radius-md);
   overflow: hidden;
+  box-shadow: var(--shadow-card);
 }
 
 .event-detail-route__label {
